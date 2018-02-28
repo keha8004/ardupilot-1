@@ -26,6 +26,7 @@
 #include <Filter/LowPassFilter2p.h>
 #include <Filter/LowPassFilter.h>
 #include <Filter/NotchFilter.h>
+//#include <AP_SerialManager/AP_SerialManager.h>
 
 class AP_InertialSensor_Backend;
 class AuxiliaryBus;
