@@ -16,14 +16,13 @@
 #include "AP_InertialSensor_HIL.h"
 #include "AP_InertialSensor_L3G4200D.h"
 #include "AP_InertialSensor_LSM9DS0.h"
-#include "AP_InertialSensor_LSM9DS1.h"
 #include "AP_InertialSensor_Invensense.h"
 #include "AP_InertialSensor_PX4.h"
 #include "AP_InertialSensor_QURT.h"
 #include "AP_InertialSensor_SITL.h"
 #include "AP_InertialSensor_qflight.h"
 #include "AP_InertialSensor_RST.h"
-#include "AP_InertialSensor_Revo.h"
+#include "AP_InertialSensor_DMU11.h"
 
 /* Define INS_TIMING_DEBUG to track down scheduling issues with the main loop.
  * Output is on the debug console. */
@@ -437,6 +436,7 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Path: ../AP_InertialSensor/BatchSampler.cpp
     AP_SUBGROUPINFO(batchsampler, "LOG_",  39, AP_InertialSensor, AP_InertialSensor::BatchSampler),
 
+
     // @Group: ENABLE_MASK
     // @DisplayName: IMU enable mask
     // @Description: This is a bitmask of IMUs to enable. It can be used to prevent startup of specific detected IMUs
@@ -444,6 +444,7 @@ const AP_Param::GroupInfo AP_InertialSensor::var_info[] = {
     // @Values: 1:FirstIMUOnly,3:FirstAndSecondIMU,7:FirstSecondAndThirdIMU,127:AllIMUs
     // @Bitmask: 0:FirstIMU,1:SecondIMU,2:ThirdIMU
     AP_GROUPINFO("ENABLE_MASK",  40, AP_InertialSensor, _enable_mask, 0x7F),
+
     
     /*
       NOTE: parameter indexes have gaps above. When adding new
@@ -532,6 +533,13 @@ uint8_t AP_InertialSensor::register_gyro(uint16_t raw_sample_rate_hz,
         AP_HAL::panic("Too many gyros");
     }
 
+    // If sensor is DMU11
+    if (id == 0) {
+      _gyro_raw_sample_rates[_gyro_count] = 0;
+      _gyro_over_sampling[_gyro_count] = 0;
+      return _gyro_count++;
+    }
+
     _gyro_raw_sample_rates[_gyro_count] = raw_sample_rate_hz;
     _gyro_over_sampling[_gyro_count] = 1;
 
@@ -563,6 +571,13 @@ uint8_t AP_InertialSensor::register_accel(uint16_t raw_sample_rate_hz,
 {
     if (_accel_count == INS_MAX_INSTANCES) {
         AP_HAL::panic("Too many accels");
+    }
+
+    // If sensor is DMU11
+    if (id == 0) {
+      _accel_raw_sample_rates[_accel_count] = 0;
+      _accel_over_sampling[_accel_count] = 0;
+      return _accel_count++;
     }
 
     _accel_raw_sample_rates[_accel_count] = raw_sample_rate_hz;
@@ -616,6 +631,9 @@ void AP_InertialSensor::_start_backends()
     for (uint8_t i=get_gyro_count(); i<INS_MAX_INSTANCES; i++) {
         _gyro_id[i].set(0);
     }
+
+   // _backends[2]->update();
+
 }
 
 /* Find the N instance of the backend that has already been successfully detected */
@@ -686,7 +704,7 @@ AP_InertialSensor::init(uint16_t sample_rate)
 
 bool AP_InertialSensor::_add_backend(AP_InertialSensor_Backend *backend)
 {
-
+    hal.console->printf("%s\n", (backend==nullptr) ? "Backend=nullptr" : "Backend!=nullptr");
     if (!backend) {
         return false;
     }
@@ -694,6 +712,7 @@ bool AP_InertialSensor::_add_backend(AP_InertialSensor_Backend *backend)
         AP_HAL::panic("Too many INS backends");
     }
     _backends[_backend_count++] = backend;
+    hal.console->printf("Backend added\n");
     return true;
 }
 
@@ -728,11 +747,15 @@ AP_InertialSensor::detect_backends(void)
         return;
     }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    hal.console->printf("INS in SITL Mode\n");
     ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
+    hal.console->printf("Attempting to detect dmu11\n");
+    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
 #elif HAL_INS_DEFAULT == HAL_INS_HIL
-    ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
-#elif CONFIG_HAL_BOARD == HAL_BOARD_F4LIGHT
-    ADD_BACKEND(AP_InertialSensor_Revo::probe(*this, hal.spi->get_device(HAL_INS_MPU60x0_NAME), HAL_INS_DEFAULT_ROTATION));
+    hal.console->printf("INS in HIL Mode\n");
+    ADD_BACKEND(AP_InertialSensor_HIL::detect(*this)
+    hal.console->printf("Attempting to detect dmu11\n");
+    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this)););
 #elif HAL_INS_DEFAULT == HAL_INS_MPU60XX_SPI && defined(HAL_INS_DEFAULT_ROTATION)
     ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU60x0_NAME),
                                                   HAL_INS_DEFAULT_ROTATION));
@@ -763,9 +786,14 @@ AP_InertialSensor::detect_backends(void)
         break;
 
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
+        hal.console->printf("PixHawk2 backend detected\n");
         // older Pixhawk2 boards have the MPU6000 instead of MPU9250
         _fast_sampling_mask.set_default(1);
+        hal.console->printf("Attempting to detect dmu11\n");
+        ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+        hal.console->printf("Attempting to detect Invensense\n");
         ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
+        hal.console->printf("Attempting to detect LSM9DS0\n");
         ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
                                                       hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
                                                       hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
@@ -864,8 +892,6 @@ AP_InertialSensor::detect_backends(void)
 #elif HAL_INS_DEFAULT == HAL_INS_EDGE
     ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU60x0_NAME), ROTATION_YAW_90));
     ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU60x0_NAME_EXT), ROTATION_YAW_90));
-#elif HAL_INS_DEFAULT == HAL_INS_LSM9DS1
-    ADD_BACKEND(AP_InertialSensor_LSM9DS1::probe(*this, hal.spi->get_device(HAL_INS_LSM9DS1_NAME)));
 #elif HAL_INS_DEFAULT == HAL_INS_LSM9DS0
     ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
                  hal.spi->get_device(HAL_INS_LSM9DS0_G_NAME),
@@ -1270,6 +1296,15 @@ void AP_InertialSensor::update(void)
     // during initialisation update() may be called without
     // wait_for_sample(), and a wait is implied
     wait_for_sample();
+
+    //bool DMU11_test_data = AP_InertialSensor_DMU11::get_DMU11_data();
+    //hal.console->printf("%s\n",DMU11_test_data ? "true" : "false");
+
+    //AP_InertialSensor_DMU11 dmu11;
+    //dmu11.return_DMU11_data();
+
+    //bool DMU_test_data = _backends[2]->AP_InertialSensor_DMU11::get_DMU11_data();
+
 
     if (!_hil_mode) {
         for (uint8_t i=0; i<INS_MAX_INSTANCES; i++) {
