@@ -757,8 +757,8 @@ AP_InertialSensor::detect_backends(void)
     hal.console->printf("INS in SITL Mode\n");
     ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
     hal.console->printf("Attempting to detect dmu11\n");
-    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
-    hal.console->printf("INS in HIL Mode\n");
+    //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+    //hal.console->printf("INS in HIL Mode\n");
 #elif HAL_INS_DEFAULT == HAL_INS_HIL
     ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
     hal.console->printf("Attempting to detect dmu11\n");
@@ -797,8 +797,9 @@ AP_InertialSensor::detect_backends(void)
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
 
         //_fast_sampling_mask.set_default(1);
-/*
+
         // older Pixhawk2 boards have the MPU6000 instead of MPU9250
+    /*
         hal.console->printf("PixHawk2 backend detected\n");
 
         hal.console->printf("Attempting to detect Invensense\n");

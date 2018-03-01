@@ -29,6 +29,7 @@
 #include <AP_InertialSensor/AP_InertialSensor.h>
 #include <AP_Baro/AP_Baro.h>
 #include <AP_Param/AP_Param.h>
+#include <AP_InertialSensor/AP_InertialSensor_DMU11.h>
 
 class OpticalFlow;
 #define AP_AHRS_TRIM_LIMIT 10.0f        // maximum trim angle in degrees
@@ -96,6 +97,20 @@ public:
         _rotation_autopilot_body_to_vehicle_body.from_euler(_last_trim.x, _last_trim.y, 0.0f);
         _rotation_vehicle_body_to_autopilot_body = _rotation_autopilot_body_to_vehicle_body.transposed();
     }
+
+        // RAMROD AGC Feedback
+    Vector3i get_agc_feedback(void);
+
+    Vector3i get_agc(void) const {
+        return _agc;
+    }
+
+     // Signal from payload (0: GPS available, 1: no GPS available)
+    int16_t agc_feedback;
+    int16_t agc_feedback_prev;
+    int16_t randswitch;
+    Vector3i _agc;
+    uint32_t last_flag_ms;
 
     // empty virtual destructor
     virtual ~AP_AHRS() {}

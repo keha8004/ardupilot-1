@@ -33,12 +33,16 @@ void Plane::init_ardupilot()
     //
     load_parameters();
 
+    agc_feedback = 0;
+    hal.console->printf("Init agc_feedback = 0\n");
+
     // initialise stats module
     g2.stats.init();
 
 #if HIL_SUPPORT
     if (g.hil_mode == 1) {
         // set sensors to HIL mode
+        gcs().send_text(MAV_SEVERITY_INFO,"Entering HIL Mode");
         ins.set_hil_mode();
         compass.set_hil_mode();
         barometer.set_hil_mode();

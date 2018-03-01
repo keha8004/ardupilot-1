@@ -166,6 +166,11 @@ private:
     Parameters g;
     ParametersG2 g2;
 
+    // Signal from payload (0: GPS available, 1: no GPS available)
+    AP_Int8 agc_feedback;
+    AP_Int8 agc_feedback_prev;
+    AP_Int8 randswitch;
+
     // main loop scheduler
     AP_Scheduler scheduler;
 
@@ -1062,6 +1067,7 @@ private:
     void accel_cal_update(void);
     void update_soft_armed();
     void update_soaring();
+    void RAMROD_Switch();
 
     // support for AP_Avoidance custom flight mode, AVOID_ADSB
     bool avoid_adsb_init(bool ignore_checks);

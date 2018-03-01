@@ -159,6 +159,16 @@ void NavEKF2_core::setAidingMode()
     // Save the previous status so we can detect when it has changed
     PV_AidingModePrev = PV_AidingMode;
 
+    // get AGC status
+    auto agc = _ahrs->get_agc();
+
+    agc_feedback_prev = agc.x;
+    agc_feedback = agc.y;
+
+    if (agc_feedback != agc_feedback_prev) {
+        gcs().send_text(MAV_SEVERITY_INFO, "EKF: %d %d.", (int)agc_feedback_prev, (int)agc_feedback);
+    }
+
     // Determine if we should change aiding mode
     switch (PV_AidingMode) {
     case AID_NONE: {
@@ -167,7 +177,7 @@ void NavEKF2_core::setAidingMode()
         bool filterIsStable = tiltAlignComplete && yawAlignComplete && checkGyroCalStatus();
         // If GPS usage has been prohiited then we use flow aiding provided optical flow data is present
         // GPS aiding is the preferred option unless excluded by the user
-        bool canUseGPS = ((frontend->_fusionModeGPS) != 3 && readyToUseGPS() && filterIsStable && !gpsInhibit);
+        bool canUseGPS = ((frontend->_fusionModeGPS) != 3 && readyToUseGPS() && filterIsStable && !gpsInhibit && agc_feedback == 0);
         bool canUseRangeBeacon = readyToUseRangeBeacon() && filterIsStable;
         if(canUseGPS || canUseRangeBeacon) {
             PV_AidingMode = AID_ABSOLUTE;
@@ -184,7 +194,7 @@ void NavEKF2_core::setAidingMode()
         bool flowFusionTimeout = ((imuSampleTime_ms - prevFlowFuseTime_ms) > 5000);
         // Enable switch to absolute position mode if GPS is available
         // If GPS is not available and flow fusion has timed out, then fall-back to no-aiding
-        if((frontend->_fusionModeGPS) != 3 && readyToUseGPS() && !gpsInhibit) {
+        if((frontend->_fusionModeGPS) != 3 && readyToUseGPS() && !gpsInhibit && agc_feedback == 0) {
             PV_AidingMode = AID_ABSOLUTE;
         } else if (flowSensorTimeout || flowFusionTimeout) {
             PV_AidingMode = AID_NONE;
@@ -255,6 +265,8 @@ void NavEKF2_core::setAidingMode()
             velTimeout = true;
             rngBcnTimeout = true;
             gpsNotAvailable = true;
+        } else if (agc_feedback == 1) {
+            PV_AidingMode = AID_RELATIVE;
         }
         }
         break;
@@ -321,6 +333,10 @@ void NavEKF2_core::setAidingMode()
 
         default:
             break;
+        }
+
+        if (PV_AidingMode != PV_AidingModePrev) {
+            gcs().send_text(MAV_SEVERITY_INFO, "AidMode: %d -> %d.", (int)PV_AidingModePrev, (int)PV_AidingMode);
         }
 
         // Always reset the position and velocity when changing mode

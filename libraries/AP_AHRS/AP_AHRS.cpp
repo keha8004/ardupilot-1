@@ -17,6 +17,8 @@
 #include "AP_AHRS.h"
 #include "AP_AHRS_View.h"
 #include <AP_HAL/AP_HAL.h>
+#include <GCS_MAVLink/GCS.h>
+#include <AP_InertialSensor/AP_InertialSensor_DMU11.h>
 
 extern const AP_HAL::HAL& hal;
 
@@ -130,6 +132,48 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
 
     AP_GROUPEND
 };
+
+Vector3i AP_AHRS::get_agc_feedback(void)
+{
+    agc_feedback_prev = agc_feedback;
+
+    // get GPS coordinates
+    const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
+    const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
+
+    // set up 500m square
+
+
+    //gcs().send_text(MAV_SEVERITY_INFO, "LAT %d (401435834)",(int)GPS_lat);
+    //gcs().send_text(MAV_SEVERITY_INFO, "LON %d (-1052184677)",(int)GPS_lng);
+
+
+    if (GPS_lat >= 401435834 && GPS_lng >= -1052184677 && GPS_lat <= 401480864 && GPS_lng <= -1052126002) {
+        agc_feedback = 1;
+    } else {
+        agc_feedback = 0;
+    }
+
+/*
+  AP_uZedSerial::get_flag(agc_feedback) is calling the method
+  get_flag() within the class AP_uZedSerial. It passes the agc_feedback variable
+  whose address is grabbed by a pointer in get_flag() and is automatically
+  updated from within the method when the flag is read in from uart
+*/
+/*
+    if (AP_uZedSerial::get_flag(agc_feedback)) {
+        last_flag_ms = AP_HAL::millis();
+    } else if (AP_HAL::millis() - last_flag_ms > 100){
+        hal.console->printf('Lost uZed connection.');
+    }
+*/
+
+    Vector3i agc = {agc_feedback_prev,agc_feedback,0};
+
+    _agc = agc;
+    return agc;
+
+}
 
 // return a smoothed and corrected gyro vector using the latest ins data (which may not have been consumed by the EKF yet)
 Vector3f AP_AHRS::get_gyro_latest(void) const
