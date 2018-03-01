@@ -274,8 +274,8 @@ void AP_BoardConfig::sensor_config_error3(char reason, char DMUdata, int nbytes)
       particular BRD_TYPE if needed)
     */
     while (true) {
-        printf("Sensor failure: %s\n", reason);
-        gcs().send_text(MAV_SEVERITY_ERROR, "%d %d", (uint8_t)reason, (uint8_t)DMUdata);
+        printf("Sensor failure: %c\n", reason);
+        gcs().send_text(MAV_SEVERITY_ERROR, "%c %c", (uint8_t)reason, (uint8_t)DMUdata);
         hal.scheduler->delay(3000);
     }
 }
@@ -306,7 +306,7 @@ void AP_BoardConfig::sensor_config_error5(float x, float y, float z)
       particular BRD_TYPE if needed)
     */
     while (true) {
-        printf("Sensor failure: %s\n", reason);
+        //printf("Sensor failure: %s\n", reason);
         gcs().send_text(MAV_SEVERITY_ERROR, "ax: %0.2f, ay: %0.2f, az: %0.2f", x,y,z);
         hal.scheduler->delay(3000);
     }
