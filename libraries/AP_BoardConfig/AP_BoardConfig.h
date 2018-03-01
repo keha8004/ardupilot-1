@@ -65,6 +65,7 @@ public:
     static void sensor_config_error3(char reason, char DMUdata, int nbytes);
 
     static void sensor_config_error4(const char *reason, int fd);
+    static void sensor_config_error5(float x, float y, float z);
 
     // permit other libraries (in particular, GCS_MAVLink) to detect
     // that we're never going to boot properly:
