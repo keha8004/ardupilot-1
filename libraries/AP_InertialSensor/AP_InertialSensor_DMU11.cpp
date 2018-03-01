@@ -287,7 +287,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
 
-
+  AP_BoardConfig::sensor_config_error5(accel.x,accel.y,accel.z);
 
   // Notify of new measurements
   _rotate_and_correct_gyro(_gyro_instance,gyro);
