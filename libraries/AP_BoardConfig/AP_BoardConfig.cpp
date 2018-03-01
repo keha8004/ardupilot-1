@@ -275,7 +275,7 @@ void AP_BoardConfig::sensor_config_error3(char reason, char DMUdata, int nbytes)
     */
     while (true) {
         printf("Sensor failure: %s\n", reason);
-        gcs().send_text(MAV_SEVERITY_ERROR, "%c %c", reason, DMUdata);
+        gcs().send_text(MAV_SEVERITY_ERROR, "%d %d", (uint8_t)reason, (uint8_t)DMUdata);
         hal.scheduler->delay(3000);
     }
 }

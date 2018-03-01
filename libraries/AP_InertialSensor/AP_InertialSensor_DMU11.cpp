@@ -82,9 +82,9 @@ AP_InertialSensor_Backend *AP_InertialSensor_DMU11::probe(AP_InertialSensor &imu
 void AP_InertialSensor_DMU11::start(void)
 {
   // Register 1 accel and 1 gyro, sampling raw at 1000Hz, with DMU11 protocol
-  _gyro_instance = _imu.register_gyro(1000,0);
+  _gyro_instance = _imu.register_gyro(200,0);
   hal.console->printf("Registered DMU11 gyro [%u]\n", _gyro_instance);
-  _accel_instance = _imu.register_accel(1000,0);
+  _accel_instance = _imu.register_accel(200,0);
   hal.console->printf("Registered DMU11 accel [%u]\n", _accel_instance);
 }
 
@@ -157,7 +157,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       } // while(nbytes-->0)
       hal.console->printf("Broke out of while loop.\n");
       hal.console->printf("Message: %c %c\n", message[0], message[1]);
-      AP_BoardConfig::sensor_config_error3(message[0],message[1],nbytes);
+      //AP_BoardConfig::sensor_config_error3(message[0],message[1],nbytes);
 
     } //if (initialize_message)
 
@@ -282,18 +282,21 @@ void AP_InertialSensor_DMU11::parse_data(void)
   xRate = u_float.f;
 
   // Save to imu data types
-  //Vector3f gyro = Vector3f(xRate,yRate,zRate);
-  //gyro *= DEG2RAD;
+  Vector3f gyro = Vector3f(xRate,yRate,zRate);
+  gyro *= DEG2RAD;
 
-  //Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
+  Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
+
+
 
   // Notify of new measurements
-  //_rotate_and_correct_gyro(_gyro_instance,gyro);
-  //_notify_new_gyro_raw_sample(_gyro_instance,gyro);
+  _rotate_and_correct_gyro(_gyro_instance,gyro);
+  _notify_new_gyro_raw_sample(_gyro_instance,gyro);
 
-  //_rotate_and_correct_accel(_accel_instance,accel);
-  //_notify_new_accel_raw_sample(_accel_instance,accel);
+  _rotate_and_correct_accel(_accel_instance,accel);
+  _notify_new_accel_raw_sample(_accel_instance,accel);
 
+  //AP_BoardConfig::sensor_config_error("error");
 
   msg_len = 0;
 
