@@ -103,7 +103,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       such that the header line 0x55AA occupies the first two indices of the buffer
     */
     if (initialize_message) {
-      hal.scheduler->delay(50);
+      //hal.scheduler->delay(50);
       // Check number of available bytes
       nbytes = uart->available();
       hal.console->printf("nbytes: %d\n",nbytes);
@@ -157,7 +157,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       } // while(nbytes-->0)
       hal.console->printf("Broke out of while loop.\n");
       hal.console->printf("Message: %c %c\n", message[0], message[1]);
-      hal.scheduler->delay(20000);
+      AP_BoardConfig::sensor_config_error3(message[0],message[1],nbytes);
 
     } //if (initialize_message)
 

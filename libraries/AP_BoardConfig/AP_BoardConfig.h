@@ -62,7 +62,7 @@ public:
 
     static void sensor_config_error2(const char *reason, void* backend, uint8_t count, uint16_t nbytes);
 
-    static void sensor_config_error3(const char *reason, const char *DMUdata, int nbytes);
+    static void sensor_config_error3(char reason, char DMUdata, int nbytes);
 
     static void sensor_config_error4(const char *reason, int fd);
 

@@ -661,7 +661,7 @@ AP_InertialSensor_Backend *AP_InertialSensor::_find_backend(int16_t backend_id, 
 void
 AP_InertialSensor::init(uint16_t sample_rate)
 {
-    AP_BoardConfig::sensor_config_error("error");
+    //AP_BoardConfig::sensor_config_error("error");
     // remember the sample rate
     _sample_rate = sample_rate;
     _loop_delta_t = 1.0f / sample_rate;
