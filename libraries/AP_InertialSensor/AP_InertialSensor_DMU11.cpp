@@ -34,7 +34,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_HAL/utility/RingBuffer.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
-//#include <string>
 #include "AP_InertialSensor_DMU11.h"
 
 // Declare external reference to HAL to gain access to namespace objects
@@ -106,60 +105,27 @@ void AP_InertialSensor_DMU11::accumulate(void)
       nbytes = uart->available();
       
       if (nbytes < 40) {
-          hal.console->printf("Not enough data available on DMU11.\n");
+        return;
+          //hal.console->printf("Not enough data available on DMU11.\n");
       }
 
       c = uart->read();
+      nbytes--;
 
       if (c != HEADER1) {
+          initialize_message = true;
           find_header();
-        }
-
-      //char tmp_c;
-
-      // Loop through nbytes to read data
-      /*
-      while (nbytes-- > 0) {
-
-        // read byte from buffer
-        c = uart->read();
-
-        // check for header line 0x55AA
-        if (c != HEADER1) {
-            continue;
-        }
-        //hal.console->printf("char: %c\n", c);
-        tmp_c = c;
-        // We found 0x55, now need to do another read to verify that
-        // the next byte is 0xAA
-        c = uart->read();
-        nbytes--; // manually decrement for extra read statement
-        if (c != HEADER2) {
-            // Second byte isnt the expected second part of the header line (0xAA)
-            // so its just another piece of data
-            continue;  // Back to top of loop to try again
+          if (initialize_message == true) {
+            return;
           }
-          // We got here which means the header line has been found.
-          // Now we can start filling the message buffer
-          // First two indices are filled manually with the header that has already read
-          message[0] = tmp_c;
-          message[1] = c;
-          msg_len = 2;
-          initialize_message = false;   // Message no longer needs to be initialized
-          break;  // Break out of while loop
-      } // while(nbytes-->0)
-    } //if (initialize_message)
-    */
+        }
 
 //// Now the message buffer has been initialized and can be filled normally
     // Check number of available bytes
-    message[msg_len] = c;
-    msg_len++;
     nbytes = uart->available();
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
-      //hal.console->printf("[%d %d]         ", (uint8_t)message[0], (uint8_t)message[1]);
-      //hal.console->printf("%d     ", (uint8_t)message[msg_len-1]);
+
       if (msg_len == MESSAGE_SIZE) {
         /*
           If the message size has been maxed out (40 bytes) it is time to parse through the contents.
@@ -176,15 +142,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
         */
         parse_data();
 
-        // Peek next byte for header indication. If its not the header, we need to search for it again and reinitialize
-       /*
-        int16_t cpeek = uart->peek(0);
-        if (c != HEADER1) {
-          hal.console->printf("Header 1 not correct\n");
-          initialize_message = true;
-          break;
-        }
-        */
       }
     } // while (nbytes-- > 0)
 
@@ -219,10 +176,13 @@ void AP_InertialSensor_DMU11::find_header(void)
           // First two indices are filled manually with the header that has already read
           message[0] = tmp_c;
           message[1] = c;
+          initialize_message = false;
           msg_len = 2;
-          initialize_message = false;   // Message no longer needs to be initialized
           break;  // Break out of while loop
       } // while(nbytes-->0)
+      if (initialize_message == true) {
+        hal.console->printf("Failed to initialize DMU message\n");
+      }
       return;
 }
 
@@ -331,6 +291,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   msg_len = 0;
 
+  return;
+
 }
 
 
@@ -344,8 +306,6 @@ bool AP_InertialSensor_DMU11::update(void)
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);
 
-
-    // reading_cm = 100 * sum / count;
     return true;
 }
 

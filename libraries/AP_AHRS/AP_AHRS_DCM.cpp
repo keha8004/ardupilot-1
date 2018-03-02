@@ -139,6 +139,7 @@ AP_AHRS_DCM::matrix_update(float _G_Dt)
 void
 AP_AHRS_DCM::reset(bool recover_eulers)
 {
+    hal.console->printf("Resetting AHRS");
     // reset the integration terms
     _omega_I.zero();
     _omega_P.zero();

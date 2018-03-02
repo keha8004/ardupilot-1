@@ -809,7 +809,7 @@ AP_InertialSensor::detect_backends(void)
 
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
 
-        //_fast_sampling_mask.set_default(1);
+        _fast_sampling_mask.set_default(1);
 
         // older Pixhawk2 boards have the MPU6000 instead of MPU9250
     

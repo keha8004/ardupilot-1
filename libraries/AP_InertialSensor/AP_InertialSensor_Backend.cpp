@@ -157,7 +157,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         if (_imu._gyro_raw_sample_rates[instance] < 100) {
             return;
         }
-
+        hal.console->printf("Sample rate: %f\n", _imu._gyro_raw_sample_rates[instance]);
         dt = 1.0f / _imu._gyro_raw_sample_rates[instance];
     }
     _imu._gyro_last_sample_us[instance] = sample_us;

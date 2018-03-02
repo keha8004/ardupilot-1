@@ -1,4 +1,5 @@
 #include "Plane.h"
+#include <AP_BoardConfig/AP_BoardConfig.h>
 
 /*****************************************************************************
 *   The init_ardupilot function processes everything we need for an in - air restart
@@ -188,6 +189,7 @@ void Plane::init_ardupilot()
     hal.console->printf("Entered Startup Ground\n");
     startup_ground();
     hal.console->printf("Left Startup Ground\n");
+    //AP_BoardConfig::sensor_config_error("error");
 
     // don't initialise aux rc output until after quadplane is setup as
     // that can change initial values of channels
