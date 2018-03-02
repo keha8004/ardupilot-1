@@ -1499,6 +1499,7 @@ check_sample:
         bool accel_available = false;
         while (true) {
             for (uint8_t i=0; i<_backend_count; i++) {
+                //hal.console->printf("Accululating Samples");
                 _backends[i]->accumulate();
             }
 

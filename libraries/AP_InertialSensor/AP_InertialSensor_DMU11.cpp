@@ -53,11 +53,11 @@ AP_InertialSensor_DMU11::AP_InertialSensor_DMU11(AP_InertialSensor &imu) :
 {
     AP_SerialManager &serial_manager = AP::serialmanager();
 
-    hal.console->printf("Creating new DMU11 obj\n");
+    //hal.console->printf("Creating new DMU11 obj\n");
     uart = serial_manager.find_serial(AP_SerialManager::SerialProtocol_DMU11, 0);
     if (uart != nullptr) {
         uart->begin(serial_manager.find_baudrate(AP_SerialManager::SerialProtocol_DMU11, 0));
-        hal.console->printf("Started sensor on uartE\n");
+        //hal.console->printf("Started sensor on uartE\n");
     }
 }
 
@@ -67,13 +67,13 @@ AP_InertialSensor_Backend *AP_InertialSensor_DMU11::probe(AP_InertialSensor &imu
     AP_SerialManager &serial_manager = AP::serialmanager();
   // Return nullptr if no sensor is connected on uartE
   if (serial_manager.find_serial(AP_SerialManager::SerialProtocol_DMU11, 0) == nullptr){
-    hal.console->printf("No detected sensor on uartE\n");
+    //hal.console->printf("No detected sensor on uartE\n");
     return nullptr;
   }
   // Otherwise declare pointer to new object
   //AP_InertialSensor_DMU11 *sensor = new AP_InertialSensor_DMU11(imu,serial_manager);
   AP_InertialSensor_DMU11 *sensor = new AP_InertialSensor_DMU11(imu);
-  hal.console->printf("Detected sensor on uartE\n");
+  //hal.console->printf("Detected sensor on uartE\n");
   return sensor;
 }
 
@@ -96,33 +96,30 @@ void AP_InertialSensor_DMU11::accumulate(void)
         AP_BoardConfig::sensor_config_error("Error: UART port not configured");
     }
     //AP_BoardConfig::sensor_config_error("error");
-    int16_t nbytes;
-    char c;
+
     /*
       If this is the first read, the message buffer needs to be initialized
       such that the header line 0x55AA occupies the first two indices of the buffer
     */
-    if (initialize_message) {
-      //hal.scheduler->delay(50);
+    //if (initialize_message) {
       // Check number of available bytes
       nbytes = uart->available();
-      //hal.console->printf("nbytes: %d\n",nbytes);
-      //AP_BoardConfig::sensor_config_error3("nbytes","nbytes",nbytes);
-
-      if (nbytes == 0) {
-          hal.console->printf("No bytes available on DMU11.\n");
+      
+      if (nbytes < 40) {
+          hal.console->printf("Not enough data available on DMU11.\n");
       }
 
-      char tmp_c;
+      c = uart->read();
+
+      if (c != HEADER1) {
+          find_header();
+        }
+
+      //char tmp_c;
 
       // Loop through nbytes to read data
+      /*
       while (nbytes-- > 0) {
-
-        if ((nbytes == 1) || (nbytes == 2) ) {
-            hal.scheduler->delay(50);
-            nbytes = uart->available();
-            //hal.console->printf("nbytes: %d\n", nbytes);
-        }
 
         // read byte from buffer
         c = uart->read();
@@ -140,11 +137,8 @@ void AP_InertialSensor_DMU11::accumulate(void)
         if (c != HEADER2) {
             // Second byte isnt the expected second part of the header line (0xAA)
             // so its just another piece of data
-            //need to delay 95.5 us per framed byte
-            //hal.scheduler->delay_microseconds(96);
             continue;  // Back to top of loop to try again
           }
-          //hal.console->printf("char: %c\n", c);
           // We got here which means the header line has been found.
           // Now we can start filling the message buffer
           // First two indices are filled manually with the header that has already read
@@ -153,21 +147,18 @@ void AP_InertialSensor_DMU11::accumulate(void)
           msg_len = 2;
           initialize_message = false;   // Message no longer needs to be initialized
           break;  // Break out of while loop
-        //} // if(c==HEADER1)
       } // while(nbytes-->0)
-      hal.console->printf("Broke out of while loop.\n");
-      //hal.console->printf("message[0] : %d\n", (uint8_t)message[0]);
-      //hal.console->printf("message[1] : %d\n", (uint8_t)message[1]);
-      //hal.console->printf("Message: %d %d\n", (uint8_t)message[0], (uint8_t)message[1]);
-      //AP_BoardConfig::sensor_config_error3(message[0],message[1],nbytes);
     } //if (initialize_message)
+    */
 
 //// Now the message buffer has been initialized and can be filled normally
     // Check number of available bytes
+    message[msg_len] = c;
+    msg_len++;
     nbytes = uart->available();
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
-      //hal.console->printf("message[%d] : %d\n", msg_len, (uint8_t)message[msg_len-1]);
+      //hal.console->printf("[%d %d]         ", (uint8_t)message[0], (uint8_t)message[1]);
       //hal.console->printf("%d     ", (uint8_t)message[msg_len-1]);
       if (msg_len == MESSAGE_SIZE) {
         /*
@@ -187,25 +178,55 @@ void AP_InertialSensor_DMU11::accumulate(void)
 
         // Peek next byte for header indication. If its not the header, we need to search for it again and reinitialize
        /*
-        c = hal.peek();
+        int16_t cpeek = uart->peek(0);
         if (c != HEADER1) {
+          hal.console->printf("Header 1 not correct\n");
           initialize_message = true;
           break;
         }
         */
       }
     } // while (nbytes-- > 0)
-    //message[msg_len++] = '\0';
-
-    //uint8_t count2 = 0;
-    //hal.console->printf("msg_len: %d", msg_len);
-    //while (count2++ < msg_len ) {
-    //  hal.console->printf("Message[%d]: %c\n", count2, message[count2]);
-    //}
 
     return;
 
 }
+
+void AP_InertialSensor_DMU11::find_header(void)
+{
+      while (nbytes-- > 0) {
+
+        // read byte from buffer
+        c = uart->read();
+
+        // check for header line 0x55AA
+        if (c != HEADER1) {
+            continue;
+        }
+        //hal.console->printf("char: %c\n", c);
+        tmp_c = c;
+        // We found 0x55, now need to do another read to verify that
+        // the next byte is 0xAA
+        c = uart->read();
+        nbytes--; // manually decrement for extra read statement
+        if (c != HEADER2) {
+            // Second byte isnt the expected second part of the header line (0xAA)
+            // so its just another piece of data
+            continue;  // Back to top of loop to try again
+          }
+          // We got here which means the header line has been found.
+          // Now we can start filling the message buffer
+          // First two indices are filled manually with the header that has already read
+          message[0] = tmp_c;
+          message[1] = c;
+          msg_len = 2;
+          initialize_message = false;   // Message no longer needs to be initialized
+          break;  // Break out of while loop
+      } // while(nbytes-->0)
+      return;
+}
+
+
 
 void AP_InertialSensor_DMU11::parse_data(void)
 {
@@ -295,7 +316,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   //hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
 
   //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
-  hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
+  //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
 
   //AP_BoardConfig::sensor_config_error("error");
 
@@ -317,7 +338,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
 bool AP_InertialSensor_DMU11::update(void)
 {
-  hal.console->printf("Updating");
+  //hal.console->printf("Updating");
     accumulate();
 
     update_accel(_accel_instance);
@@ -327,12 +348,4 @@ bool AP_InertialSensor_DMU11::update(void)
     // reading_cm = 100 * sum / count;
     return true;
 }
-
-
-/*
-bool AP_InertialSensor_DMU11::update(void)
-{
-  return false;
-}
-*/
 

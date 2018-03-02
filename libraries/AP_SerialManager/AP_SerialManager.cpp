@@ -275,8 +275,8 @@ AP_HAL::UARTDriver *AP_SerialManager::find_serial(enum SerialProtocol protocol, 
     for(uint8_t i=0; i<SERIALMANAGER_NUM_PORTS; i++) {
         if (protocol_match(protocol, (enum SerialProtocol)state[i].protocol.get())) {
             if (found_instance == instance) {
-                hal.console->printf("uart: %p | expected uart: %p\n", state[i].uart,hal.uartE);
-                hal.console->printf("baud: %d, protocol: %d\n", (int32_t)state[i].baud, (int8_t)state[i].protocol);
+                //hal.console->printf("uart: %p | expected uart: %p\n", state[i].uart,hal.uartE);
+                //hal.console->printf("baud: %d, protocol: %d\n", (int32_t)state[i].baud, (int8_t)state[i].protocol);
 
                 return state[i].uart;
             }

@@ -161,9 +161,9 @@ AP_AHRS_DCM::reset(bool recover_eulers)
 
         // the first vector may be invalid as the filter starts up
         while ((initAccVec.length() < 9.0f || initAccVec.length() > 11) && counter++ < 20) {
-            hal.console->printf("Waiting for sample\n");
+            //hal.console->printf("Waiting for sample\n");
             _ins.wait_for_sample();
-            hal.console->printf("Updating INS\n");
+            //hal.console->printf("Updating INS\n");
 
             _ins.update();
             initAccVec = _ins.get_accel();

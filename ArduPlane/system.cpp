@@ -34,7 +34,7 @@ void Plane::init_ardupilot()
     load_parameters();
 
     agc_feedback = 0;
-    hal.console->printf("Init agc_feedback = 0\n");
+    //hal.console->printf("Init agc_feedback = 0\n");
 
     // initialise stats module
     g2.stats.init();
@@ -103,7 +103,7 @@ void Plane::init_ardupilot()
 
     // init baro
     barometer.init();
-    hal.console->printf("Initialized Baro\n");
+    //hal.console->printf("Initialized Baro\n");
 
     // initialise rangefinder
     init_rangefinder();
@@ -585,15 +585,15 @@ void Plane::startup_INS_ground(void)
 
     ahrs.init();
 
-    hal.console->printf("Initialized AHRS\n");
+    //hal.console->printf("Initialized AHRS\n");
 
     ahrs.set_fly_forward(true);
     ahrs.set_vehicle_class(AHRS_VEHICLE_FIXED_WING);
     ahrs.set_wind_estimation(true);
 
-    hal.console->printf("Entering ins.init\n");
+    //hal.console->printf("Entering ins.init\n");
     ins.init(scheduler.get_loop_rate_hz());
-    hal.console->printf("Exiting ins.init\n");
+    //hal.console->printf("Exiting ins.init\n");
 
     ahrs.reset();
     hal.console->printf("Reset AHRS\n");

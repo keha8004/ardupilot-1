@@ -174,6 +174,7 @@ void AP_Baro::calibrate(bool save)
             if (AP_HAL::millis() - tstart > 500) {
                 AP_HAL::panic("PANIC: AP_Baro::read unsuccessful "
                         "for more than 500ms in AP_Baro::calibrate [2]\r\n");
+                hal.console->printf("PANIC: AP_Baro::read unsuccessful for more than 500ms in AP_Baro::calibrate [2]");
             }
             hal.scheduler->delay(10);
         } while (!healthy());
@@ -194,6 +195,7 @@ void AP_Baro::calibrate(bool save)
             if (AP_HAL::millis() - tstart > 500) {
                 AP_HAL::panic("PANIC: AP_Baro::read unsuccessful "
                         "for more than 500ms in AP_Baro::calibrate [3]\r\n");
+                hal.console->printf("PANIC: AP_Baro::read unsuccessful for more than 500ms in AP_Baro::calibrate [3]");
             }
         } while (!healthy());
         for (uint8_t i=0; i<_num_sensors; i++) {
@@ -621,6 +623,7 @@ void AP_Baro::update(void)
             }
         }
     }
+    //hal.console->printf("Updated Baro Backends");
 }
 
 /*

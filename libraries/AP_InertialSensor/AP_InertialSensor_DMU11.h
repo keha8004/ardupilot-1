@@ -29,6 +29,9 @@ public:
   // void update(void) override;
 
 private:
+  int16_t nbytes;
+  char c;
+  char tmp_c;
   char HEADER1, HEADER2;
   uint8_t MESSAGE_SIZE;
   float DEG2RAD;
@@ -40,6 +43,7 @@ private:
   uint8_t linebuf_len = 0;
   char message[40];
   void parse_data(void);
+  void find_header(void);
   //MessageStatus message_status = MESSAGE_INCOMPLETE;
   bool initialize_message;
   uint8_t msg_len = 0;

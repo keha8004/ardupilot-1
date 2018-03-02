@@ -5,6 +5,7 @@ void Plane::init_barometer(bool full_calibration)
 {
     gcs().send_text(MAV_SEVERITY_INFO, "Calibrating barometer");
     if (full_calibration) {
+        hal.console->printf("Calibrating Baro\n");
         barometer.calibrate();
     } else {
         barometer.update_calibration();
