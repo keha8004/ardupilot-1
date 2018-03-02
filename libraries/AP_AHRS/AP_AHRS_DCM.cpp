@@ -55,6 +55,7 @@ AP_AHRS_DCM::update(bool skip_ins_update)
         _last_startup_ms = AP_HAL::millis();
     }
 
+    hal.console->printf("Updating INS");
     if (!skip_ins_update) {
         // tell the IMU to grab some data
         _ins.update();
@@ -160,7 +161,10 @@ AP_AHRS_DCM::reset(bool recover_eulers)
 
         // the first vector may be invalid as the filter starts up
         while ((initAccVec.length() < 9.0f || initAccVec.length() > 11) && counter++ < 20) {
+            hal.console->printf("Waiting for sample\n");
             _ins.wait_for_sample();
+            hal.console->printf("Updating INS\n");
+
             _ins.update();
             initAccVec = _ins.get_accel();
         }

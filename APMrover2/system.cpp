@@ -180,7 +180,9 @@ void Rover::startup_ground(void)
     //------------------------
     //
 
+    hal.console->printf("Entering startup_INS_ground\n");
     startup_INS_ground();
+    hal.console->printf("Exiting startup_INS_ground\n");
 
     // initialise mission library
     mission.init();

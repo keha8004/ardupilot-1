@@ -106,7 +106,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       //hal.scheduler->delay(50);
       // Check number of available bytes
       nbytes = uart->available();
-      hal.console->printf("nbytes: %d\n",nbytes);
+      //hal.console->printf("nbytes: %d\n",nbytes);
       //AP_BoardConfig::sensor_config_error3("nbytes","nbytes",nbytes);
 
       if (nbytes == 0) {
@@ -131,7 +131,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
         if (c != HEADER1) {
             continue;
         }
-        hal.console->printf("char: %c\n", c);
+        //hal.console->printf("char: %c\n", c);
         tmp_c = c;
         // We found 0x55, now need to do another read to verify that
         // the next byte is 0xAA
@@ -144,7 +144,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
             //hal.scheduler->delay_microseconds(96);
             continue;  // Back to top of loop to try again
           }
-          hal.console->printf("char: %c\n", c);
+          //hal.console->printf("char: %c\n", c);
           // We got here which means the header line has been found.
           // Now we can start filling the message buffer
           // First two indices are filled manually with the header that has already read
@@ -156,9 +156,10 @@ void AP_InertialSensor_DMU11::accumulate(void)
         //} // if(c==HEADER1)
       } // while(nbytes-->0)
       hal.console->printf("Broke out of while loop.\n");
-      hal.console->printf("Message: %c %c\n", message[0], message[1]);
+      //hal.console->printf("message[0] : %d\n", (uint8_t)message[0]);
+      //hal.console->printf("message[1] : %d\n", (uint8_t)message[1]);
+      //hal.console->printf("Message: %d %d\n", (uint8_t)message[0], (uint8_t)message[1]);
       //AP_BoardConfig::sensor_config_error3(message[0],message[1],nbytes);
-
     } //if (initialize_message)
 
 //// Now the message buffer has been initialized and can be filled normally
@@ -166,7 +167,8 @@ void AP_InertialSensor_DMU11::accumulate(void)
     nbytes = uart->available();
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
-      hal.console->printf("[[%d]: %c] ", msg_len, message[msg_len]);
+      //hal.console->printf("message[%d] : %d\n", msg_len, (uint8_t)message[msg_len-1]);
+      //hal.console->printf("%d     ", (uint8_t)message[msg_len-1]);
       if (msg_len == MESSAGE_SIZE) {
         /*
           If the message size has been maxed out (40 bytes) it is time to parse through the contents.
@@ -241,13 +243,14 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[3] = message[4];
   xRate = u_float.f;
 
+
   // u_float.c = {message[11],message[10],message[9],message[8]};
   // xAcc = u_float.f;
   u_float.c[0] = message[11];
   u_float.c[1] = message[10];
   u_float.c[2] = message[9];
   u_float.c[3] = message[8];
-  xRate = u_float.f;
+  xAcc = u_float.f;
 
   // u_float.c = {message[15],message[14],message[13],message[12]};
   // yRate = u_float.f;
@@ -255,7 +258,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[14];
   u_float.c[2] = message[13];
   u_float.c[3] = message[12];
-  xRate = u_float.f;
+  yRate = u_float.f;
 
   // u_float.c = {message[19],message[18],message[17],message[16]};
   // yAcc = u_float.f;
@@ -263,7 +266,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[18];
   u_float.c[2] = message[17];
   u_float.c[3] = message[16];
-  xRate = u_float.f;
+  yAcc = u_float.f;
 
   // u_float.c = {message[23],message[22],message[21],message[20]};
   // zRate = u_float.f;
@@ -271,7 +274,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[22];
   u_float.c[2] = message[21];
   u_float.c[3] = message[20];
-  xRate = u_float.f;
+  zRate = u_float.f;
 
   // u_float.c = {message[27],message[26],message[25],message[24]};
   // zAcc = u_float.f;
@@ -279,7 +282,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[26];
   u_float.c[2] = message[25];
   u_float.c[3] = message[24];
-  xRate = u_float.f;
+  zAcc = u_float.f;
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
@@ -287,13 +290,20 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
 
-  AP_BoardConfig::sensor_config_error5(accel.x,accel.y,accel.z);
+
+  //hal.console->printf("Acc: %f %f %f\n",xAcc,yAcc,zAcc);
+  //hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
+
+  //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
+  hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
+
+  //AP_BoardConfig::sensor_config_error("error");
 
   // Notify of new measurements
-  _rotate_and_correct_gyro(_gyro_instance,gyro);
+  //_rotate_and_correct_gyro(_gyro_instance,gyro);
   _notify_new_gyro_raw_sample(_gyro_instance,gyro);
 
-  _rotate_and_correct_accel(_accel_instance,accel);
+  //_rotate_and_correct_accel(_accel_instance,accel);
   _notify_new_accel_raw_sample(_accel_instance,accel);
 
   //AP_BoardConfig::sensor_config_error("error");
@@ -307,28 +317,12 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
 bool AP_InertialSensor_DMU11::update(void)
 {
-
-    //update_accel(_accel_instance);
-    //update_gyro(_gyro_instance);
-
-   /*
-    uint16_t count = 0;
-    int16_t nbytes = uart->available();
-    //hal.console->printf("nbytes: %d\n",nbytes);
-    while (nbytes-- > 0) {
-        //hal.console->printf("count: %d\n",count);
-      // read byte from buffer
-      char c = uart->read();
-      // immediately print to pixhawk console to verify data
-      hal.console->printf("DMU11 Data: %c\n",c);
-
-      count++;
-    }
-    */
-
-    //hal.console->printf("count: %d",count);
-
+  hal.console->printf("Updating");
     accumulate();
+
+    update_accel(_accel_instance);
+    update_gyro(_gyro_instance);
+
 
     // reading_cm = 100 * sum / count;
     return true;

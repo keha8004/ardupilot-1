@@ -173,6 +173,8 @@ void Plane::ahrs_update()
     }
 #endif
 
+
+    hal.console->printf("Updatin AHRS");
     ahrs.update();
 
     if (should_log(MASK_LOG_IMU)) {

@@ -103,6 +103,7 @@ void Plane::init_ardupilot()
 
     // init baro
     barometer.init();
+    hal.console->printf("Initialized Baro\n");
 
     // initialise rangefinder
     init_rangefinder();
@@ -129,6 +130,7 @@ void Plane::init_ardupilot()
 
     // initialise airspeed sensor
     airspeed.init();
+    hal.console->printf("Initialized Airspeed\n");
 
     if (g.compass_enabled==true) {
         bool compass_ok = compass.init() && compass.read();
@@ -183,7 +185,9 @@ void Plane::init_ardupilot()
 
     AP_Param::reload_defaults_file();
     
+    hal.console->printf("Entered Startup Ground\n");
     startup_ground();
+    hal.console->printf("Left Startup Ground\n");
 
     // don't initialise aux rc output until after quadplane is setup as
     // that can change initial values of channels
@@ -207,6 +211,8 @@ void Plane::init_ardupilot()
 
     // disable safety if requested
     BoardConfig.init_safety();
+
+    hal.console->printf("Initialized\n");
 }
 
 //********************************************************************************
@@ -226,7 +232,9 @@ void Plane::startup_ground(void)
     //INS ground start
     //------------------------
     //
+    hal.console->printf("Entering startup_INS_ground\n");
     startup_INS_ground();
+    hal.console->printf("Exiting startup_INS_ground\n");
 
     // Save the settings for in-air restart
     // ------------------------------------
@@ -576,16 +584,24 @@ void Plane::startup_INS_ground(void)
     }
 
     ahrs.init();
+
+    hal.console->printf("Initialized AHRS\n");
+
     ahrs.set_fly_forward(true);
     ahrs.set_vehicle_class(AHRS_VEHICLE_FIXED_WING);
     ahrs.set_wind_estimation(true);
 
+    hal.console->printf("Entering ins.init\n");
     ins.init(scheduler.get_loop_rate_hz());
+    hal.console->printf("Exiting ins.init\n");
+
     ahrs.reset();
+    hal.console->printf("Reset AHRS\n");
 
     // read Baro pressure at ground
     //-----------------------------
     init_barometer(true);
+    hal.console->printf("Initialized Baro\n");
 
     if (airspeed.enabled()) {
         // initialize airspeed sensor
@@ -594,6 +610,7 @@ void Plane::startup_INS_ground(void)
     } else {
         gcs().send_text(MAV_SEVERITY_WARNING,"No airspeed");
     }
+    hal.console->printf("Started\n");
 }
 
 // updates the status of the notify objects

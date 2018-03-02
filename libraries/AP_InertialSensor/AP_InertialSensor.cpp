@@ -576,11 +576,13 @@ uint8_t AP_InertialSensor::register_accel(uint16_t raw_sample_rate_hz,
     }
 
     // If sensor is DMU11
+    /*
     if (id == 0) {
       _accel_raw_sample_rates[_accel_count] = 0;
       _accel_over_sampling[_accel_count] = 0;
       return _accel_count++;
     }
+    */
 
     _accel_raw_sample_rates[_accel_count] = raw_sample_rate_hz;
     _accel_over_sampling[_accel_count] = 1;
@@ -674,6 +676,7 @@ AP_InertialSensor::init(uint16_t sample_rate)
     if (_gyro_count == 0 && _accel_count == 0) {
         _start_backends();
     }
+    //hal.console->printf("Started Backends\n");
 
     // initialise accel scale if need be. This is needed as we can't
     // give non-zero default values for vectors in AP_Param
@@ -683,10 +686,15 @@ AP_InertialSensor::init(uint16_t sample_rate)
         }
     }
 
+    //hal.console->printf("Accel Scaled\n");
+
     // calibrate gyros unless gyro calibration has been disabled
     if (gyro_calibration_timing() != GYRO_CAL_NEVER) {
         init_gyro();
+        hal.console->printf("Initialized Gyros\n");
     }
+
+    //hal.console->printf("Initialized Gyros\n");
 
 
     _sample_period_usec = 1000*1000UL / _sample_rate;
@@ -699,8 +707,12 @@ AP_InertialSensor::init(uint16_t sample_rate)
     _last_sample_usec = 0;
     _have_sample = false;
 
+    //hal.console->printf("Established Time\n");
+
     // initialise IMU batch logging
     batchsampler.init();
+
+    //hal.console->printf("Batchsampler\n");
 }
 
 bool AP_InertialSensor::_add_backend(AP_InertialSensor_Backend *backend)
@@ -751,18 +763,19 @@ AP_InertialSensor::detect_backends(void)
     
     if (_hil_mode) {
         ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
+        //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
         return;
     }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    hal.console->printf("INS in SITL Mode\n");
-    ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
-    //hal.console->printf("Attempting to detect dmu11\n");
-    //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+    //hal.console->printf("INS in SITL Mode\n");
+    //ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
+    hal.console->printf("Attempting to detect dmu11\n");
+    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
     //hal.console->printf("INS in HIL Mode\n");
 #elif HAL_INS_DEFAULT == HAL_INS_HIL
-    ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
+    //ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
     //hal.console->printf("Attempting to detect dmu11\n");
-    //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
 #elif CONFIG_HAL_BOARD == HAL_BOARD_F4LIGHT
     ADD_BACKEND(AP_InertialSensor_Revo::probe(*this, hal.spi->get_device(HAL_INS_MPU60x0_NAME), HAL_INS_DEFAULT_ROTATION));
 #elif HAL_INS_DEFAULT == HAL_INS_MPU60XX_SPI && defined(HAL_INS_DEFAULT_ROTATION)
@@ -814,7 +827,7 @@ AP_InertialSensor::detect_backends(void)
                                                       ROTATION_ROLL_180_YAW_90));
         ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
 
-        //hal.console->printf("Attempting to detect dmu11\n");
+        hal.console->printf("Attempting to detect dmu11\n");
         //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
         break;
 
@@ -981,7 +994,9 @@ bool AP_InertialSensor::_calculate_trim(const Vector3f &accel_sample, float& tri
 void
 AP_InertialSensor::init_gyro()
 {
+    hal.console->printf("Initializing gyro");
     _init_gyro();
+    hal.console->printf("Initialized gyro");
 
     // save calibration
     _save_gyro_calibration();
@@ -1000,6 +1015,10 @@ uint32_t AP_InertialSensor::get_accel_clip_count(uint8_t instance) const
 bool AP_InertialSensor::get_gyro_health_all(void) const
 {
     for (uint8_t i=0; i<get_gyro_count(); i++) {
+
+        //bool health = get_gyro_health(i);
+        //hal.console->printf("gyro[%d] healthy: %s.\n", i, health ? "true" : "false");
+
         if (!get_gyro_health(i)) {
             return false;
         }
@@ -1039,6 +1058,10 @@ bool AP_InertialSensor::use_gyro(uint8_t instance) const
 bool AP_InertialSensor::get_accel_health_all(void) const
 {
     for (uint8_t i=0; i<get_accel_count(); i++) {
+
+        //bool health = get_accel_health(i);
+        //hal.console->printf("accel[%d] healthy: %s.\n", i, health ? "true" : "false");
+
         if (!get_accel_health(i)) {
             return false;
         }
@@ -1201,6 +1224,8 @@ AP_InertialSensor::_init_gyro()
         hal.scheduler->delay(5);
         update();
     }
+
+    hal.console->printf("Averaging");
 
     // the strategy is to average 50 points over 0.5 seconds, then do it
     // again and see if the 2nd average is within a small margin of
@@ -1402,7 +1427,6 @@ void AP_InertialSensor::update(void)
             }
         }
     }
-
     // apply notch filter to primary gyro
     _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
     
@@ -1431,7 +1455,6 @@ void AP_InertialSensor::wait_for_sample(void)
         // consuming the sample with update()
         return;
     }
-
     uint32_t now = AP_HAL::micros();
 
     if (_next_sample_usec == 0 && _delta_time <= 0) {
