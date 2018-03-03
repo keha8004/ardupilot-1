@@ -113,6 +113,8 @@ void AP_InertialSensor_DMU11::accumulate(void)
       nbytes--;
 
       if (c != HEADER1) {
+          notify_gyro_fifo_reset(_gyro_instance);
+          notify_accel_fifo_reset(_accel_instance);
           initialize_message = true;
           find_header();
           if (initialize_message == true) {

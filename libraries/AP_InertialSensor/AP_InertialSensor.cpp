@@ -768,7 +768,7 @@ AP_InertialSensor::detect_backends(void)
     }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     //hal.console->printf("INS in SITL Mode\n");
-    //ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
+    // ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
     hal.console->printf("Attempting to detect dmu11\n");
     ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
     //hal.console->printf("INS in HIL Mode\n");
@@ -828,7 +828,7 @@ AP_InertialSensor::detect_backends(void)
         ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
 
         hal.console->printf("Attempting to detect dmu11\n");
-        //ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+        // ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
         break;
 
     case AP_BoardConfig::PX4_BOARD_SP01:
@@ -1714,6 +1714,9 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
         Vector3f accel_filt = _accel_vibe_floor_filter[instance].apply(accel, dt);
 
         // calc difference from this sample and 5hz filtered value, square and filter at 2hz
+        hal.console->printf("AccX: %f    Filt-X: %f\n",accel.x,accel_filt.x);
+        hal.console->printf("AccY: %f    Filt-Y: %f\n",accel.y,accel_filt.y);
+        hal.console->printf("AccZ: %f    Filt-Z: %f\n",accel.z,accel_filt.z);
         Vector3f accel_diff = (accel - accel_filt);
         accel_diff.x *= accel_diff.x;
         accel_diff.y *= accel_diff.y;

@@ -290,6 +290,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
         }
 
         dt = 1.0f / _imu._accel_raw_sample_rates[instance];
+        hal.console->printf("dt: %f\n", dt);
     }
     _imu._accel_last_sample_us[instance] = sample_us;
 
