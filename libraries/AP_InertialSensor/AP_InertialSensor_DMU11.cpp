@@ -283,10 +283,10 @@ void AP_InertialSensor_DMU11::parse_data(void)
   //AP_BoardConfig::sensor_config_error("error");
 
   // Notify of new measurements
-  //_rotate_and_correct_gyro(_gyro_instance,gyro);
+  _rotate_and_correct_gyro(_gyro_instance,gyro);
   _notify_new_gyro_raw_sample(_gyro_instance,gyro);
 
-  //_rotate_and_correct_accel(_accel_instance,accel);
+  _rotate_and_correct_accel(_accel_instance,accel);
   _notify_new_accel_raw_sample(_accel_instance,accel);
 
   //AP_BoardConfig::sensor_config_error("error");
