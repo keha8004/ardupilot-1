@@ -46,6 +46,8 @@ private:
   void find_header(void);
   //MessageStatus message_status = MESSAGE_INCOMPLETE;
   bool initialize_message;
+  bool first_call;
+  bool update_status;
   uint8_t msg_len = 0;
   float xRate,xAcc,yRate,yAcc,zRate,zAcc;
   // Union declaration to convert mem types
@@ -58,4 +60,8 @@ private:
     uint16_t ui16;
     char c[2] ;
   } u_in;
+
+  // Debugging
+  uint16_t parse_count = 0;
+
 };

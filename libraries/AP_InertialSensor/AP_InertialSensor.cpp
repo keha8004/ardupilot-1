@@ -533,20 +533,12 @@ uint8_t AP_InertialSensor::register_gyro(uint16_t raw_sample_rate_hz,
         AP_HAL::panic("Too many gyros");
     }
 
-    // If sensor is DMU11 x
-    /*
-    if (id == 0) {
-      _gyro_raw_sample_rates[_gyro_count] = 0;
-      _gyro_over_sampling[_gyro_count] = 0;
-      return _gyro_count++;
-    }
-    */
-
     _gyro_raw_sample_rates[_gyro_count] = raw_sample_rate_hz;
     _gyro_over_sampling[_gyro_count] = 1;
 
     bool saved = _gyro_id[_gyro_count].load();
 
+    hal.console->printf("Gyro ID: %d\n", (int32_t)_gyro_id[_gyro_count]);
     if (saved && (uint32_t)_gyro_id[_gyro_count] != id) {
         // inconsistent gyro id - mark it as needing calibration
         _gyro_cal_ok[_gyro_count] = false;
@@ -809,26 +801,26 @@ AP_InertialSensor::detect_backends(void)
 
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
 
-        _fast_sampling_mask.set_default(1);
+        // _fast_sampling_mask.set_default(1);
 
-        // older Pixhawk2 boards have the MPU6000 instead of MPU9250
+        // // older Pixhawk2 boards have the MPU6000 instead of MPU9250
     
-        hal.console->printf("PixHawk2 backend detected\n");
+        // hal.console->printf("PixHawk2 backend detected\n");
 
-        hal.console->printf("Attempting to detect Invensense\n");
-        ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
+        // hal.console->printf("Attempting to detect Invensense\n");
+        // ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
 
-        hal.console->printf("Attempting to detect LSM9DS0\n");
-        ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
-                                                      hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
-                                                      hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
-                                                      ROTATION_ROLL_180_YAW_270,
-                                                      ROTATION_ROLL_180_YAW_90,
-                                                      ROTATION_ROLL_180_YAW_90));
-        ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
-
-        hal.console->printf("Attempting to detect dmu11\n");
-        // ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+        // hal.console->printf("Attempting to detect LSM9DS0\n");
+        // ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
+        //                                               hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
+        //                                               hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
+        //                                               ROTATION_ROLL_180_YAW_270,
+        //                                               ROTATION_ROLL_180_YAW_90,
+        //                                               ROTATION_ROLL_180_YAW_90));
+        // ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
+// 
+        // hal.console->printf("Attempting to detect dmu11\n");
+        ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
         break;
 
     case AP_BoardConfig::PX4_BOARD_SP01:

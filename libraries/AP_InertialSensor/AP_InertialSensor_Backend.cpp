@@ -152,13 +152,13 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
      */
     if (sample_us != 0 && _imu._gyro_last_sample_us[instance] != 0) {
         dt = (sample_us - _imu._gyro_last_sample_us[instance]) * 1.0e-6;
-        hal.console->printf("First dt: %f\n", dt);
+        // hal.console->printf("First dt: %f\n", dt);
     } else {
         // don't accept below 100Hz
         if (_imu._gyro_raw_sample_rates[instance] < 100) {
             return;
         }
-        hal.console->printf("Sample rate: %f\n", _imu._gyro_raw_sample_rates[instance]);
+        // hal.console->printf("Sample rate: %f\n", _imu._gyro_raw_sample_rates[instance]);
         dt = 1.0f / _imu._gyro_raw_sample_rates[instance];
     }
     _imu._gyro_last_sample_us[instance] = sample_us;
@@ -174,9 +174,9 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     }
     
     // compute delta angle
-    hal.console->printf("GyrX: %f,    Last GyrX: %f\n", gyro.x, _imu._last_raw_gyro[instance].x);
-    hal.console->printf("GyrY: %f,    Last GyrY: %f\n", gyro.y, _imu._last_raw_gyro[instance].y);
-    hal.console->printf("GyrZ: %f,    Last GyrZ: %f\n", gyro.z, _imu._last_raw_gyro[instance].z);
+    // hal.console->printf("GyrX: %f,    Last GyrX: %f\n", gyro.x, _imu._last_raw_gyro[instance].x);
+    // hal.console->printf("GyrY: %f,    Last GyrY: %f\n", gyro.y, _imu._last_raw_gyro[instance].y);
+    // hal.console->printf("GyrZ: %f,    Last GyrZ: %f\n", gyro.z, _imu._last_raw_gyro[instance].z);
     Vector3f delta_angle = (gyro + _imu._last_raw_gyro[instance]) * 0.5f * dt;
 
     // compute coning correction
@@ -192,8 +192,11 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     // hal.console->printf("deltaConingX: %f\n", delta_coning.x);
     // hal.console->printf("deltaConingY: %f\n", delta_coning.y);
     // hal.console->printf("deltaConingZ: %f\n\n", delta_coning.z);
-    delta_coning = delta_coning % delta_angle;
+    // delta_coning = delta_coning % delta_angle;
     delta_coning *= 0.5f;
+    // hal.console->printf("deltaConingX: %f\n", delta_coning.x);
+    // hal.console->printf("deltaConingY: %f\n", delta_coning.y);
+    // hal.console->printf("deltaConingZ: %f\n\n", delta_coning.z);
 
     if (_sem->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
         // integrate delta angle accumulator
@@ -298,7 +301,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
      */
     if (sample_us != 0 && _imu._accel_last_sample_us[instance] != 0) {
         dt = (sample_us - _imu._accel_last_sample_us[instance]) * 1.0e-6;
-        hal.console->printf("dt: %f\n", dt);
+        // hal.console->printf("dt: %f\n", dt);
     } else {
         // don't accept below 100Hz
         if (_imu._accel_raw_sample_rates[instance] < 100) {
@@ -306,7 +309,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
         }
 
         dt = 1.0f / _imu._accel_raw_sample_rates[instance];
-        hal.console->printf("dt: %f\n", dt);
+        // hal.console->printf("dt: %f\n", dt);
     }
     _imu._accel_last_sample_us[instance] = sample_us;
 

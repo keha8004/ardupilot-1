@@ -46,9 +46,11 @@ AP_InertialSensor_DMU11::AP_InertialSensor_DMU11(AP_InertialSensor &imu) :
     HEADER2(0xAA),
     MESSAGE_SIZE(40),
     DEG2RAD(0.01745329251),
-    initialize_message(true)    // Initialized to true, indicating that the message buffer needs to be initialized
+    initialize_message(true),    // Initialized to true, indicating that the message buffer needs to be initialized
                                     // for the correct message formatting. This will be set to false once the format is initialized
                                     // and only set true again if theres an error in the message format
+    first_call(true),
+    update_status(false)
 {
     AP_SerialManager &serial_manager = AP::serialmanager();
 
@@ -100,12 +102,27 @@ void AP_InertialSensor_DMU11::accumulate(void)
       If this is the first read, the message buffer needs to be initialized
       such that the header line 0x55AA occupies the first two indices of the buffer
     */
+
+    if (first_call) {
+      nbytes = uart->available();
+      uint64_t first = AP_HAL::micros64();
+      while (nbytes-- > 0) {
+        c = uart->read();
+      }
+      uint64_t last = AP_HAL::micros64();
+      if ( (last-first) < 5000 ) {
+        uint64_t wait = 5000 - (last-first);
+        hal.scheduler->delay_microseconds(wait);
+        first_call = false;
+      }
+    }
+
     //if (initialize_message) {
       // Check number of available bytes
       nbytes = uart->available();
-      
       if (nbytes < 40) {
-        hal.console->printf("Not enough data available on DMU11.\n");
+        // hal.console->printf("Not enough data available on DMU11.\n");
+        update_status = false;
         return;
       }
 
@@ -113,13 +130,14 @@ void AP_InertialSensor_DMU11::accumulate(void)
       nbytes--;
 
       if (c != HEADER1) {
-          hal.console->printf("Buffer reset on HEADER1\n");
-          notify_gyro_fifo_reset(_gyro_instance);
-          notify_accel_fifo_reset(_accel_instance);
+          // hal.console->printf("Buffer reset on HEADER1\n");
+          // notify_gyro_fifo_reset(_gyro_instance);
+          // notify_accel_fifo_reset(_accel_instance);
           initialize_message = true;
           find_header();
           if (initialize_message == true) {
             hal.console->printf("Unable to reset buffer on HEADER1\n");
+            update_status = false;
             return;
           }
         }
@@ -135,6 +153,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
             find_header();
             if (initialize_message == true) {
               hal.console->printf("Unable to reset buffer on HEADER2\n");
+              update_status = false;
               return;
             }
           }
@@ -168,7 +187,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
 
       }
     } // while (nbytes-- > 0)
-
     return;
 
 }
@@ -238,16 +256,24 @@ void AP_InertialSensor_DMU11::parse_data(void)
     }
   */
 
+  // Debug
+  parse_count++;
+  // hal.console->printf("Calls to parse_data(): %d\n", parse_count);
   // Use union to extract meaningful data and convert to the approriate types
   // uint64_t now = AP_HAL::micros64();
+  // hal.console->printf("Sample micros: %lu\n\n", now);
 
+
+  // Unit Conversion Multipliers
+  const float ACCEL_SCALE = -GRAVITY_MSS;
+  const float GYRO_SCALE = -DEG2RAD;
   // u_float.c = {message[7],message[6],message[5],message[4]};
   // xRate = u_float.f;
   u_float.c[0] = message[7];
   u_float.c[1] = message[6];
   u_float.c[2] = message[5];
   u_float.c[3] = message[4];
-  xRate = u_float.f;
+  xRate = u_float.f*GYRO_SCALE;
 
 
   // u_float.c = {message[11],message[10],message[9],message[8]};
@@ -256,7 +282,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[10];
   u_float.c[2] = message[9];
   u_float.c[3] = message[8];
-  xAcc = u_float.f;
+  xAcc = u_float.f*ACCEL_SCALE;
 
   // u_float.c = {message[15],message[14],message[13],message[12]};
   // yRate = u_float.f;
@@ -264,7 +290,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[14];
   u_float.c[2] = message[13];
   u_float.c[3] = message[12];
-  yRate = u_float.f;
+  yRate = u_float.f*GYRO_SCALE;
 
   // u_float.c = {message[19],message[18],message[17],message[16]};
   // yAcc = u_float.f;
@@ -272,7 +298,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[18];
   u_float.c[2] = message[17];
   u_float.c[3] = message[16];
-  yAcc = u_float.f;
+  yAcc = u_float.f*ACCEL_SCALE;
 
   // u_float.c = {message[23],message[22],message[21],message[20]};
   // zRate = u_float.f;
@@ -280,7 +306,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[22];
   u_float.c[2] = message[21];
   u_float.c[3] = message[20];
-  zRate = u_float.f;
+  zRate = u_float.f*GYRO_SCALE;
 
   // u_float.c = {message[27],message[26],message[25],message[24]};
   // zAcc = u_float.f;
@@ -288,20 +314,17 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[26];
   u_float.c[2] = message[25];
   u_float.c[3] = message[24];
-  zAcc = u_float.f;
+  zAcc = u_float.f*ACCEL_SCALE;
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
-  gyro *= -DEG2RAD;
+  // gyro *= -DEG2RAD;
 
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
-  accel *= -GRAVITY_MSS;
+  // accel *= -GRAVITY_MSS;
 
-  // hal.console->printf("Acc: %f %f %f\n",xAcc,yAcc,zAcc);
-  // hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
-
-  //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
-  //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
+  // hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
+  // hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
 
   //AP_BoardConfig::sensor_config_error("error");
 
@@ -318,6 +341,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   msg_len = 0;
 
+  update_status = true;
   return;
 
 }
@@ -328,7 +352,11 @@ void AP_InertialSensor_DMU11::parse_data(void)
 bool AP_InertialSensor_DMU11::update(void)
 {
   //hal.console->printf("Updating");
+    update_status = false;
     accumulate();
+    if ( !update_status ) {
+      return true;
+    } 
 
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);

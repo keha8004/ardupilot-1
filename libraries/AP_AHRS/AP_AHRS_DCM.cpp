@@ -55,7 +55,7 @@ AP_AHRS_DCM::update(bool skip_ins_update)
         _last_startup_ms = AP_HAL::millis();
     }
 
-    hal.console->printf("Updating INS");
+    // hal.console->printf("Updating INS");
     if (!skip_ins_update) {
         // tell the IMU to grab some data
         _ins.update();
@@ -139,7 +139,7 @@ AP_AHRS_DCM::matrix_update(float _G_Dt)
 void
 AP_AHRS_DCM::reset(bool recover_eulers)
 {
-    hal.console->printf("Resetting AHRS");
+    // hal.console->printf("Resetting AHRS");
     // reset the integration terms
     _omega_I.zero();
     _omega_P.zero();
