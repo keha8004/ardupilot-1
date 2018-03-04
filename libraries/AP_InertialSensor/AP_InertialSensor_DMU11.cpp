@@ -323,8 +323,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
   // accel *= -GRAVITY_MSS;
 
-  // hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
-  // hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
+  hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
+  hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
 
   //AP_BoardConfig::sensor_config_error("error");
 

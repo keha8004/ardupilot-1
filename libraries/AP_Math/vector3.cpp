@@ -19,9 +19,12 @@
 #pragma GCC optimize("O3")
 
 #include "AP_Math.h"
+#include <AP_HAL/AP_HAL.h>
 
 #define HALF_SQRT_2 0.70710678118654757f
 
+
+extern const AP_HAL::HAL& hal;
 // rotate a vector by a standard rotation, attempting
 // to use the minimum number of floating point operations
 template <typename T>
@@ -258,6 +261,8 @@ void Vector3<T>::rotate_inverse(enum Rotation rotation)
 template <typename T>
 Vector3<T> Vector3<T>::operator %(const Vector3<T> &v) const
 {
+//     hal.console->printf("X: %f, Y: %f, Z: %f\n", x,y,z);
+//     hal.console->printf("v.X: %f, v.Y: %f, v.Z: %f\n\n", v.x,v.y,v.z);
     Vector3<T> temp(y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x);
     return temp;
 }
