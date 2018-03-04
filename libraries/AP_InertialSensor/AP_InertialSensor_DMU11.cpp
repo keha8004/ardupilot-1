@@ -105,20 +105,42 @@ void AP_InertialSensor_DMU11::accumulate(void)
       nbytes = uart->available();
       
       if (nbytes < 40) {
+        hal.console->printf("Not enough data available on DMU11.\n");
         return;
-          //hal.console->printf("Not enough data available on DMU11.\n");
       }
 
       c = uart->read();
       nbytes--;
 
       if (c != HEADER1) {
+          hal.console->printf("Buffer reset on HEADER1\n");
           notify_gyro_fifo_reset(_gyro_instance);
           notify_accel_fifo_reset(_accel_instance);
           initialize_message = true;
           find_header();
           if (initialize_message == true) {
+            hal.console->printf("Unable to reset buffer on HEADER1\n");
             return;
+          }
+        }
+        else {
+          message[0] = c;
+          c = uart->read();
+          nbytes--;
+          if (c != HEADER2) {
+            hal.console->printf("Buffer reset on HEADER2\n");
+            notify_gyro_fifo_reset(_gyro_instance);
+            notify_accel_fifo_reset(_accel_instance);
+            initialize_message = true;
+            find_header();
+            if (initialize_message == true) {
+              hal.console->printf("Unable to reset buffer on HEADER2\n");
+              return;
+            }
+          }
+          else {
+            message[1] = c;
+            msg_len = 2;
           }
         }
 
@@ -217,7 +239,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   */
 
   // Use union to extract meaningful data and convert to the approriate types
-  uint64_t now = AP_HAL::micros64();
+  // uint64_t now = AP_HAL::micros64();
 
   // u_float.c = {message[7],message[6],message[5],message[4]};
   // xRate = u_float.f;
@@ -270,10 +292,10 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
-  gyro *= DEG2RAD;
+  gyro *= -DEG2RAD;
 
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
-
+  accel *= -GRAVITY_MSS;
 
   // hal.console->printf("Acc: %f %f %f\n",xAcc,yAcc,zAcc);
   // hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
@@ -285,12 +307,12 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
   // Notify of new measurements
   // _rotate_and_correct_gyro(_gyro_instance,gyro);
-  // _notify_new_gyro_raw_sample(_gyro_instance,gyro);
-  _notify_new_gyro_raw_sample(_gyro_instance,gyro,now);
+  _notify_new_gyro_raw_sample(_gyro_instance,gyro);
+  // _notify_new_gyro_raw_sample(_gyro_instance,gyro,now);
 
   // _rotate_and_correct_accel(_accel_instance,accel);
-  // _notify_new_accel_raw_sample(_accel_instance,accel);
-  _notify_new_accel_raw_sample(_accel_instance,accel,now);
+  _notify_new_accel_raw_sample(_accel_instance,accel);
+  // _notify_new_accel_raw_sample(_accel_instance,accel,now);
 
   //AP_BoardConfig::sensor_config_error("error");
 

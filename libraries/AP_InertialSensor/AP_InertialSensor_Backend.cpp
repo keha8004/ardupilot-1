@@ -152,6 +152,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
      */
     if (sample_us != 0 && _imu._gyro_last_sample_us[instance] != 0) {
         dt = (sample_us - _imu._gyro_last_sample_us[instance]) * 1.0e-6;
+        hal.console->printf("First dt: %f\n", dt);
     } else {
         // don't accept below 100Hz
         if (_imu._gyro_raw_sample_rates[instance] < 100) {
@@ -173,6 +174,9 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     }
     
     // compute delta angle
+    hal.console->printf("GyrX: %f,    Last GyrX: %f\n", gyro.x, _imu._last_raw_gyro[instance].x);
+    hal.console->printf("GyrY: %f,    Last GyrY: %f\n", gyro.y, _imu._last_raw_gyro[instance].y);
+    hal.console->printf("GyrZ: %f,    Last GyrZ: %f\n", gyro.z, _imu._last_raw_gyro[instance].z);
     Vector3f delta_angle = (gyro + _imu._last_raw_gyro[instance]) * 0.5f * dt;
 
     // compute coning correction
@@ -182,6 +186,12 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     // see also examples/coning.py
     Vector3f delta_coning = (_imu._delta_angle_acc[instance] +
                              _imu._last_delta_angle[instance] * (1.0f / 6.0f));
+    // hal.console->printf("deltaAngleX: %f\n", delta_angle.x);
+    // hal.console->printf("deltaAngleY: %f\n", delta_angle.y);
+    // hal.console->printf("deltaAngleZ: %f\n\n", delta_angle.z);
+    // hal.console->printf("deltaConingX: %f\n", delta_coning.x);
+    // hal.console->printf("deltaConingY: %f\n", delta_coning.y);
+    // hal.console->printf("deltaConingZ: %f\n\n", delta_coning.z);
     delta_coning = delta_coning % delta_angle;
     delta_coning *= 0.5f;
 
@@ -197,7 +207,11 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         _imu._last_delta_angle[instance] = delta_angle;
         _imu._last_raw_gyro[instance] = gyro;
 
-        _imu._gyro_filtered[instance] = _imu._gyro_filter[instance].apply(gyro);
+        // _imu._gyro_filtered[instance] = _imu._gyro_filter[instance].apply(gyro);
+        _imu._gyro_filtered[instance] = gyro;
+        // hal.console->printf("GyrX: %f, FilteredX: %f\n", gyro.x, _imu._gyro_filtered[instance].x);
+        // hal.console->printf("GyrY: %f, FilteredY: %f\n", gyro.y, _imu._gyro_filtered[instance].y);
+        // hal.console->printf("GyrZ: %f, FilteredZ: %f\n\n", gyro.z, _imu._gyro_filtered[instance].z);
         if (_imu._gyro_filtered[instance].is_nan() || _imu._gyro_filtered[instance].is_inf()) {
             _imu._gyro_filter[instance].reset();
         }
@@ -284,6 +298,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
      */
     if (sample_us != 0 && _imu._accel_last_sample_us[instance] != 0) {
         dt = (sample_us - _imu._accel_last_sample_us[instance]) * 1.0e-6;
+        hal.console->printf("dt: %f\n", dt);
     } else {
         // don't accept below 100Hz
         if (_imu._accel_raw_sample_rates[instance] < 100) {
@@ -300,17 +315,18 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
     AP_Module::call_hook_accel_sample(instance, dt, accel, fsync_set);
 #endif    
     
-    _imu.calc_vibration_and_clipping(instance, accel, dt);
+    // _imu.calc_vibration_and_clipping(instance, accel, dt);
 
     if (_sem->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
         // delta velocity
         _imu._delta_velocity_acc[instance] += accel * dt;
         _imu._delta_velocity_acc_dt[instance] += dt;
 
-        _imu._accel_filtered[instance] = _imu._accel_filter[instance].apply(accel);
-        hal.console->printf("AccX: %f, FilteredX: %f\n", accel.x, _imu._gyro_filtered[instance].x);
-        hal.console->printf("AccY: %f, FilteredY: %f\n", accel.y, _imu._gyro_filtered[instance].y);
-        hal.console->printf("AccZ: %f, FilteredZ: %f\n\n", accel.z, _imu._gyro_filtered[instance].z);
+        // _imu._accel_filtered[instance] = _imu._accel_filter[instance].apply(accel);
+        _imu._accel_filtered[instance] = accel;
+        // hal.console->printf("AccX: %f, FilteredX: %f\n", accel.x, _imu._accel_filtered[instance].x);
+        // hal.console->printf("AccY: %f, FilteredY: %f\n", accel.y, _imu._accel_filtered[instance].y);
+        // hal.console->printf("AccZ: %f, FilteredZ: %f\n\n", accel.z, _imu._accel_filtered[instance].z);
         if (_imu._accel_filtered[instance].is_nan() || _imu._accel_filtered[instance].is_inf()) {
             _imu._accel_filter[instance].reset();
         }

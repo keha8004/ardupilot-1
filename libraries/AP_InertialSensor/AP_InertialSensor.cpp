@@ -1428,7 +1428,7 @@ void AP_InertialSensor::update(void)
         }
     }
     // apply notch filter to primary gyro
-    _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
+    // _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
     
     _last_update_usec = AP_HAL::micros();
     
