@@ -308,6 +308,9 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
         _imu._delta_velocity_acc_dt[instance] += dt;
 
         _imu._accel_filtered[instance] = _imu._accel_filter[instance].apply(accel);
+        hal.console->printf("AccX: %f, FilteredX: %f\n", accel.x, _imu._gyro_filtered[instance].x);
+        hal.console->printf("AccY: %f, FilteredY: %f\n", accel.y, _imu._gyro_filtered[instance].y);
+        hal.console->printf("AccZ: %f, FilteredZ: %f\n\n", accel.z, _imu._gyro_filtered[instance].z);
         if (_imu._accel_filtered[instance].is_nan() || _imu._accel_filtered[instance].is_inf()) {
             _imu._accel_filter[instance].reset();
         }

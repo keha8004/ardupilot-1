@@ -217,6 +217,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
   */
 
   // Use union to extract meaningful data and convert to the approriate types
+  uint64_t now = AP_HAL::micros64();
 
   // u_float.c = {message[7],message[6],message[5],message[4]};
   // xRate = u_float.f;
@@ -274,8 +275,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
 
 
-  //hal.console->printf("Acc: %f %f %f\n",xAcc,yAcc,zAcc);
-  //hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
+  // hal.console->printf("Acc: %f %f %f\n",xAcc,yAcc,zAcc);
+  // hal.console->printf("Gyro: %f %f %f\n",xRate,yRate,zRate); 
 
   //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
   //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
@@ -283,11 +284,13 @@ void AP_InertialSensor_DMU11::parse_data(void)
   //AP_BoardConfig::sensor_config_error("error");
 
   // Notify of new measurements
-  _rotate_and_correct_gyro(_gyro_instance,gyro);
-  _notify_new_gyro_raw_sample(_gyro_instance,gyro);
+  // _rotate_and_correct_gyro(_gyro_instance,gyro);
+  // _notify_new_gyro_raw_sample(_gyro_instance,gyro);
+  _notify_new_gyro_raw_sample(_gyro_instance,gyro,now);
 
-  _rotate_and_correct_accel(_accel_instance,accel);
-  _notify_new_accel_raw_sample(_accel_instance,accel);
+  // _rotate_and_correct_accel(_accel_instance,accel);
+  // _notify_new_accel_raw_sample(_accel_instance,accel);
+  _notify_new_accel_raw_sample(_accel_instance,accel,now);
 
   //AP_BoardConfig::sensor_config_error("error");
 
