@@ -1706,9 +1706,6 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
         Vector3f accel_filt = _accel_vibe_floor_filter[instance].apply(accel, dt);
 
         // calc difference from this sample and 5hz filtered value, square and filter at 2hz
-        hal.console->printf("AccX: %f    Filt-X: %f\n",accel.x,accel_filt.x);
-        hal.console->printf("AccY: %f    Filt-Y: %f\n",accel.y,accel_filt.y);
-        hal.console->printf("AccZ: %f    Filt-Z: %f\n\n",accel.z,accel_filt.z);
         Vector3f accel_diff = (accel - accel_filt);
         accel_diff.x *= accel_diff.x;
         accel_diff.y *= accel_diff.y;
