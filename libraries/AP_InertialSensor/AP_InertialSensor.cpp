@@ -1693,6 +1693,7 @@ AuxiliaryBus *AP_InertialSensor::get_auxiliary_bus(int16_t backend_id, uint8_t i
 // calculate vibration levels and check for accelerometer clipping (called by a backends)
 void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vector3f &accel, float dt)
 {
+    return;
     // check for clipping
     if (fabsf(accel.x) > AP_INERTIAL_SENSOR_ACCEL_CLIP_THRESH_MSS ||
         fabsf(accel.y) > AP_INERTIAL_SENSOR_ACCEL_CLIP_THRESH_MSS ||
@@ -1707,9 +1708,27 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
 
         // calc difference from this sample and 5hz filtered value, square and filter at 2hz
         Vector3f accel_diff = (accel - accel_filt);
+
+
+        hal.console->printf("accel_diff: %f %f %f\n",accel_diff.x,accel_diff.y,accel_diff.z);
+
+        const float vib_tolerence = 0.001;
+
+        if (accel_diff.x < vib_tolerence) {
+            accel_diff.x = vib_tolerence;
+        }
+        if (accel_diff.y < vib_tolerence) {
+            accel_diff.y = vib_tolerence;
+        }
+        if (accel_diff.z < vib_tolerence) {
+            accel_diff.z = vib_tolerence;
+        }
         accel_diff.x *= accel_diff.x;
         accel_diff.y *= accel_diff.y;
         accel_diff.z *= accel_diff.z;
+
+        hal.console->printf("accel_diff: %f %f %f\n\n",accel_diff.x,accel_diff.y,accel_diff.z);
+
         _accel_vibe_filter[instance].apply(accel_diff, dt);
     }
 }

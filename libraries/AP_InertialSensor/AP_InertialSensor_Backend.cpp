@@ -318,15 +318,15 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
     AP_Module::call_hook_accel_sample(instance, dt, accel, fsync_set);
 #endif    
     
-    // _imu.calc_vibration_and_clipping(instance, accel, dt);
+     _imu.calc_vibration_and_clipping(instance, accel, dt);
 
     if (_sem->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
         // delta velocity
         _imu._delta_velocity_acc[instance] += accel * dt;
         _imu._delta_velocity_acc_dt[instance] += dt;
 
-        // _imu._accel_filtered[instance] = _imu._accel_filter[instance].apply(accel);
-        _imu._accel_filtered[instance] = accel;
+         _imu._accel_filtered[instance] = _imu._accel_filter[instance].apply(accel);
+        //_imu._accel_filtered[instance] = accel;
         // hal.console->printf("AccX: %f, FilteredX: %f\n", accel.x, _imu._accel_filtered[instance].x);
         // hal.console->printf("AccY: %f, FilteredY: %f\n", accel.y, _imu._accel_filtered[instance].y);
         // hal.console->printf("AccZ: %f, FilteredZ: %f\n\n", accel.z, _imu._accel_filtered[instance].z);

@@ -34,6 +34,8 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_HAL/utility/RingBuffer.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
+//#include <float.h>
+#include <cmath>
 #include "AP_InertialSensor_DMU11.h"
 
 // Declare external reference to HAL to gain access to namespace objects
@@ -121,7 +123,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       // Check number of available bytes
       nbytes = uart->available();
       if (nbytes < 40) {
-        // hal.console->printf("Not enough data available on DMU11.\n");
+        hal.console->printf("Not enough data available on DMU11.\n");
         update_status = false;
         return;
       }
@@ -248,13 +250,7 @@ void AP_InertialSensor_DMU11::parse_data(void)
       18      error ind.    16 bit    36-37
       19      Checksum      16 bit    38-39
   */
-  /*
-    calculate and verify checksum values to ensure consistent message
-    checksum = ???;
-    if (message[MESSAGE_SIZE-1] != checksum) {
-      // we're fucked and this method doesnt work
-    }
-  */
+
 
   // Debug
   parse_count++;
@@ -267,13 +263,38 @@ void AP_InertialSensor_DMU11::parse_data(void)
   // Unit Conversion Multipliers
   const float ACCEL_SCALE = -GRAVITY_MSS;
   const float GYRO_SCALE = -DEG2RAD;
+
+  uint16_t checksum_ref = 0;
+  for (int count_check = 0; count_check < 38; count_check++) {
+    checksum_ref += (uint16_t)message[count_check];
+  }
+
+  uint16_t checksum_ref2 = TwosCompliment(checksum_ref);
+
+
+  u_in.c[0] = message[39];
+  u_in.c[1] = message[38];
+  checksum = u_in.i16;
+
+
+  hal.console->printf("check_ref: %d   check_ref2: %d  check: %d\n", checksum_ref, checksum_ref2, checksum);
+  // if (checksum + checksum_ref != 0) {
+  //   update_status = false;
+  //   hal.console->printf("Checksum incorrect.\n");
+  //   return;
+  // }
+
+
+
   // u_float.c = {message[7],message[6],message[5],message[4]};
   // xRate = u_float.f;
   u_float.c[0] = message[7];
   u_float.c[1] = message[6];
   u_float.c[2] = message[5];
   u_float.c[3] = message[4];
-  xRate = u_float.f*GYRO_SCALE;
+  xRate = u_float.f;
+  hal.console->printf("xRate: %f  ",xRate);
+  xRate *= GYRO_SCALE;
 
 
   // u_float.c = {message[11],message[10],message[9],message[8]};
@@ -282,7 +303,9 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[10];
   u_float.c[2] = message[9];
   u_float.c[3] = message[8];
-  xAcc = u_float.f*ACCEL_SCALE;
+  xAcc = u_float.f;
+  hal.console->printf("xAcc: %f\n  ",xAcc);
+  xAcc *= ACCEL_SCALE;
 
   // u_float.c = {message[15],message[14],message[13],message[12]};
   // yRate = u_float.f;
@@ -290,7 +313,9 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[14];
   u_float.c[2] = message[13];
   u_float.c[3] = message[12];
-  yRate = u_float.f*GYRO_SCALE;
+  yRate = u_float.f;
+  hal.console->printf("yRate: %f  ",yRate);
+  yRate *= GYRO_SCALE;
 
   // u_float.c = {message[19],message[18],message[17],message[16]};
   // yAcc = u_float.f;
@@ -298,7 +323,9 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[18];
   u_float.c[2] = message[17];
   u_float.c[3] = message[16];
-  yAcc = u_float.f*ACCEL_SCALE;
+  yAcc = u_float.f;
+  hal.console->printf("yAcc: %f\n  ",yAcc);
+  yAcc *= ACCEL_SCALE;
 
   // u_float.c = {message[23],message[22],message[21],message[20]};
   // zRate = u_float.f;
@@ -306,7 +333,9 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[22];
   u_float.c[2] = message[21];
   u_float.c[3] = message[20];
-  zRate = u_float.f*GYRO_SCALE;
+  zRate = u_float.f;
+  hal.console->printf("zRate: %f  ",zRate);
+  zRate *= GYRO_SCALE;
 
   // u_float.c = {message[27],message[26],message[25],message[24]};
   // zAcc = u_float.f;
@@ -314,7 +343,9 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[1] = message[26];
   u_float.c[2] = message[25];
   u_float.c[3] = message[24];
-  zAcc = u_float.f*ACCEL_SCALE;
+  zAcc = u_float.f;
+  hal.console->printf("zAcc: %f\n  ",zAcc);
+  zAcc *= ACCEL_SCALE;
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
@@ -323,19 +354,19 @@ void AP_InertialSensor_DMU11::parse_data(void)
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
   // accel *= -GRAVITY_MSS;
 
-  hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
-  hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
+  //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
+  //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
 
   //AP_BoardConfig::sensor_config_error("error");
 
   // Notify of new measurements
   // _rotate_and_correct_gyro(_gyro_instance,gyro);
   _notify_new_gyro_raw_sample(_gyro_instance,gyro);
-  // _notify_new_gyro_raw_sample(_gyro_instance,gyro,now);
+   //_notify_new_gyro_raw_sample(_gyro_instance,gyro,now);
 
   // _rotate_and_correct_accel(_accel_instance,accel);
   _notify_new_accel_raw_sample(_accel_instance,accel);
-  // _notify_new_accel_raw_sample(_accel_instance,accel,now);
+  //_notify_new_accel_raw_sample(_accel_instance,accel,now);
 
   //AP_BoardConfig::sensor_config_error("error");
 
@@ -346,6 +377,32 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
 }
 
+uint16_t AP_InertialSensor_DMU11::TwosCompliment(uint16_t Decimal_Num)
+{
+  long long BinaryNum = 0;
+  int remainder, count2 = 1;
+
+  while (Decimal_Num!=0)
+  {
+      remainder = Decimal_Num%2;
+      Decimal_Num /= 2;
+      BinaryNum += remainder*count2;
+      count2 *= 10;
+  }
+
+  long long Binary_TwosComp = ~BinaryNum + 1;
+
+
+  int Decimal_TwosComp = 0, count3 = 0, remainder2;
+  while (Binary_TwosComp!=0)
+  {
+      remainder2 = Binary_TwosComp%10;
+      Binary_TwosComp /= 10;
+      Decimal_TwosComp += remainder2*pow(2,count3);
+      ++count3;
+  }
+  return Decimal_TwosComp;
+}
 
 
 
