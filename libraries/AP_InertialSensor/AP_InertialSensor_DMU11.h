@@ -33,7 +33,7 @@ private:
   char c;
   char tmp_c;
   char HEADER1, HEADER2;
-  int8_t MESSAGE_SIZE;
+  uint8_t MESSAGE_SIZE;
   float DEG2RAD;
   uint16_t checksum;
   AP_HAL::UARTDriver *uart = nullptr;
@@ -44,12 +44,7 @@ private:
   char message[40];
   void parse_data(void);
   void find_header(void);
-<<<<<<< HEAD
   bool VerifyChecksum(void);
-=======
-  int16_t TwosCompliment(int16_t Decimal_Num);
-  //MessageStatus message_status = MESSAGE_INCOMPLETE;
->>>>>>> 9be43d9bca75c9db78e801014840e07b9ebb7e39
   bool initialize_message;
   bool first_call;
   bool update_status;
@@ -62,11 +57,7 @@ private:
   } u_float;
 
   union InertialInts {
-<<<<<<< HEAD
     uint16_t i;
-=======
-    int16_t i16;
->>>>>>> 9be43d9bca75c9db78e801014840e07b9ebb7e39
     char c[2] ;
   } c2i16;
 

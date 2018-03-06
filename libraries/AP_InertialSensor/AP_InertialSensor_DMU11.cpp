@@ -108,7 +108,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
     if (first_call) {
       nbytes = uart->available();
       uint64_t first = AP_HAL::micros64();
-      hal.console->printf("First call -- clearing bytes, also fuck you\n");
       while (nbytes-- > 0) {
         c = uart->read();
       }
@@ -150,8 +149,8 @@ void AP_InertialSensor_DMU11::accumulate(void)
           nbytes--;
           if (c != HEADER2) {
             hal.console->printf("Buffer reset on HEADER2\n");
-            //notify_gyro_fifo_reset(_gyro_instance);
-            //notify_accel_fifo_reset(_accel_instance);
+            notify_gyro_fifo_reset(_gyro_instance);
+            notify_accel_fifo_reset(_accel_instance);
             initialize_message = true;
             find_header();
             if (initialize_message == true) {
@@ -169,11 +168,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
 //// Now the message buffer has been initialized and can be filled normally
     // Check number of available bytes
     nbytes = uart->available();
-    if (nbytes < 38) {
-      hal.console->printf("Not enough data available on DMU11.\n");
-      update_status = false;
-      return;
-    }
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
 
@@ -269,35 +263,10 @@ void AP_InertialSensor_DMU11::parse_data(void)
   // Unit Conversion Multipliers
   const float ACCEL_SCALE = -GRAVITY_MSS;
   const float GYRO_SCALE = -DEG2RAD;
-  const float MAX_VAL = 10;
 
-<<<<<<< HEAD
   c2i16.c[0] = message[39];
   c2i16.c[1] = message[38];
   checksum = c2i16.i;
-=======
-  // int16_t checksum_ref = 0;
-  // for (int count_check = 0; count_check < 18; count_check++) {
-  //     u_in.c[0] = message[count_check+1];
-  //     u_in.c[1] = message[count_check];
-  //     checksum_ref += u_in.i16;
-  // }
-
-  // int16_t checksum_ref2 = TwosCompliment(checksum_ref);
-
-
-  // u_in.c[0] = message[39];
-  // u_in.c[1] = message[38];
-  // checksum = u_in.i16;
-
-
-  // hal.console->printf("check_ref: %d   check_ref: %d  check: %d\n", checksum_ref, checksum_ref2, checksum);
-  // if (checksum + checksum_ref != 0) {
-  //   update_status = false;
-  //   hal.console->printf("Checksum incorrect.\n");
-  //   return;
-  // }
->>>>>>> 9be43d9bca75c9db78e801014840e07b9ebb7e39
 
   if ( !VerifyChecksum() ) {
     update_status = false;
@@ -314,14 +283,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[5];
   u_float.c[3] = message[4];
   xRate = u_float.f;
-  // if ((xRate > MAX_VAL) || (xRate < -MAX_VAL)) {
-  //     hal.console->printf("Message not lined up\n");
-  //     initialize_message = true;
-  //     update_status = false;
-  //     return;
-  // }
-  // hal.console->printf("xRate: %f  ",xRate);
-  // xRate *= GYRO_SCALE;
+  hal.console->printf("xRate: %f  ",xRate);
+  xRate *= GYRO_SCALE;
 
 
   // u_float.c = {message[11],message[10],message[9],message[8]};
@@ -331,14 +294,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[9];
   u_float.c[3] = message[8];
   xAcc = u_float.f;
-  //   if ((xAcc > MAX_VAL) || (xAcc < -MAX_VAL)) {
-  //     hal.console->printf("Message not lined up\n");
-  //     initialize_message = true;
-  //     update_status = false;
-  //     return;
-  // }
-  // hal.console->printf("xAcc: %f\n  ",xAcc);
-  // xAcc *= ACCEL_SCALE;
+  hal.console->printf("xAcc: %f\n  ",xAcc);
+  xAcc *= ACCEL_SCALE;
 
   // u_float.c = {message[15],message[14],message[13],message[12]};
   // yRate = u_float.f;
@@ -347,14 +304,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[13];
   u_float.c[3] = message[12];
   yRate = u_float.f;
-  //   if ((yRate > MAX_VAL) || (yRate < -MAX_VAL)) {
-  //     hal.console->printf("Message not lined up\n");
-  //     initialize_message = true;
-  //     update_status = false;
-  //     return;
-  // }
-  // hal.console->printf("yRate: %f  ",yRate);
-  // yRate *= GYRO_SCALE;
+  hal.console->printf("yRate: %f  ",yRate);
+  yRate *= GYRO_SCALE;
 
   // u_float.c = {message[19],message[18],message[17],message[16]};
   // yAcc = u_float.f;
@@ -363,14 +314,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[17];
   u_float.c[3] = message[16];
   yAcc = u_float.f;
-  //   if ((yAcc > MAX_VAL) || (yAcc < -MAX_VAL)) {
-  //     hal.console->printf("Message not lined up\n");
-  //     initialize_message = true;
-  //     update_status = false;
-  //     return;
-  // }
-  // hal.console->printf("yAcc: %f\n  ",yAcc);
-  // yAcc *= ACCEL_SCALE;
+  hal.console->printf("yAcc: %f\n  ",yAcc);
+  yAcc *= ACCEL_SCALE;
 
   // u_float.c = {message[23],message[22],message[21],message[20]};
   // zRate = u_float.f;
@@ -379,14 +324,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[21];
   u_float.c[3] = message[20];
   zRate = u_float.f;
-  //     if ((zRate > MAX_VAL) || (zRate < -MAX_VAL)) {
-  //       hal.console->printf("Message not lined up\n");
-  //       initialize_message = true;
-  //       update_status = false;
-  //       return;
-  // }
-  // hal.console->printf("zRate: %f  ",zRate);
-  // zRate *= GYRO_SCALE;
+  hal.console->printf("zRate: %f  ",zRate);
+  zRate *= GYRO_SCALE;
 
   // u_float.c = {message[27],message[26],message[25],message[24]};
   // zAcc = u_float.f;
@@ -395,43 +334,8 @@ void AP_InertialSensor_DMU11::parse_data(void)
   u_float.c[2] = message[25];
   u_float.c[3] = message[24];
   zAcc = u_float.f;
-  //     if ((zAcc > MAX_VAL) || (zAcc < -MAX_VAL)) {
-  //       hal.console->printf("Message not lined up\n");
-  //       initialize_message = true;
-  //       update_status = false;
-  //       return;
-  // }
-  // hal.console->printf("zAcc: %f\n  ",zAcc);
-  // zAcc *= ACCEL_SCALE;
-
-
-if ((xRate > MAX_VAL) || (xRate < -MAX_VAL) || (xAcc > MAX_VAL) || (xAcc < -MAX_VAL) || (yRate > MAX_VAL) || (yRate < -MAX_VAL) || (yAcc > MAX_VAL) || (yAcc < -MAX_VAL) || (zRate > MAX_VAL) || (zRate < -MAX_VAL) || (zAcc > MAX_VAL) || (zAcc < -MAX_VAL)) {
-        hal.console->printf("Message not lined up\n");
-        initialize_message = true;
-        update_status = false;
-        return;
-}
-if ((xRate == 0.0f) || (xAcc == 0.0f) || (yRate == 0.0f) || (yAcc == 0.0f) || (zRate == 0.0f) ||   (zAcc == 0.0f)) {
-        hal.console->printf("Message not lined up, zeros\n");
-        initialize_message = true;
-        update_status = false;
-        return;
-}
-  // hal.console->printf("xRate: %f  ",xRate);
-  xRate *= GYRO_SCALE;
-  // hal.console->printf("xAcc: %f\n  ",xAcc);
-  xAcc *= ACCEL_SCALE;
-  // hal.console->printf("yRate: %f  ",yRate);
-  yRate *= GYRO_SCALE;
-  // hal.console->printf("yAcc: %f\n  ",yAcc);
-  yAcc *= ACCEL_SCALE;
-  // hal.console->printf("zRate: %f  ",zRate);
-  zRate *= GYRO_SCALE;
-  // hal.console->printf("zAcc: %f\n  ",zAcc);
+  hal.console->printf("zAcc: %f\n  ",zAcc);
   zAcc *= ACCEL_SCALE;
-
-
-
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
@@ -462,21 +366,6 @@ if ((xRate == 0.0f) || (xAcc == 0.0f) || (yRate == 0.0f) || (yAcc == 0.0f) || (z
 
 }
 
-<<<<<<< HEAD
-=======
-int16_t AP_InertialSensor_DMU11::TwosCompliment(int16_t Decimal_Num)
-{
-  long long BinaryNum = 0;
-  int remainder, count2 = 1;
-
-  while (Decimal_Num!=0)
-  {
-      remainder = Decimal_Num%2;
-      Decimal_Num /= 2;
-      BinaryNum += remainder*count2;
-      count2 *= 10;
-  }
->>>>>>> 9be43d9bca75c9db78e801014840e07b9ebb7e39
 
 bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
   uint16_t count = 0;
@@ -492,7 +381,6 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
   sum &= 0xFFFF;
   uint16_t twos_comp = ~sum+1;
 
-<<<<<<< HEAD
   hal.console->printf("\nChecksum: %d\n", checksum);
   hal.console->printf("VerifyChecksum: %d\n\n", twos_comp);
   if ( twos_comp == checksum ) {
@@ -502,16 +390,6 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
   else {
     hal.console->printf("VerifyChecksum: returning false\n");
     return false;
-=======
-  int16_t Decimal_TwosComp = 0;
-  int count3 = 0, remainder2;
-  while (Binary_TwosComp!=0)
-  {
-      remainder2 = Binary_TwosComp%10;
-      Binary_TwosComp /= 10;
-      Decimal_TwosComp += remainder2*pow(2,count3);
-      ++count3;
->>>>>>> 9be43d9bca75c9db78e801014840e07b9ebb7e39
   }
 }
 
