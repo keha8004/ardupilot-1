@@ -1420,7 +1420,7 @@ void AP_InertialSensor::update(void)
         }
     }
     // apply notch filter to primary gyro
-    // _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
+    _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
     
     _last_update_usec = AP_HAL::micros();
     
@@ -1710,7 +1710,7 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
         Vector3f accel_diff = (accel - accel_filt);
 
 
-        hal.console->printf("accel_diff: %f %f %f\n",accel_diff.x,accel_diff.y,accel_diff.z);
+        // hal.console->printf("accel_diff: %f %f %f\n",accel_diff.x,accel_diff.y,accel_diff.z);
 
         // const float vib_tolerence = 0.001;
 
@@ -1727,7 +1727,7 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
         accel_diff.y *= accel_diff.y;
         accel_diff.z *= accel_diff.z;
 
-        hal.console->printf("accel_diff: %f %f %f\n\n",accel_diff.x,accel_diff.y,accel_diff.z);
+        // hal.console->printf("accel_diff: %f %f %f\n\n",accel_diff.x,accel_diff.y,accel_diff.z);
 
         _accel_vibe_filter[instance].apply(accel_diff, dt);
     }

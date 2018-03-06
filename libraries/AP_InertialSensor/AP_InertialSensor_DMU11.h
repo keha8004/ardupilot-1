@@ -42,7 +42,7 @@ private:
   char linebuf[40];
   uint8_t linebuf_len = 0;
   char message[40];
-  void parse_data(void);
+  bool parse_data(void);
   void find_header(void);
   bool VerifyChecksum(void);
   bool initialize_message;

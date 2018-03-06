@@ -57,6 +57,7 @@ void AP_InertialSensor_Backend::_set_gyro_oversampling(uint8_t instance, uint8_t
 void AP_InertialSensor_Backend::_update_sensor_rate(uint16_t &count, uint32_t &start_us, float &rate_hz)
 {
     uint32_t now = AP_HAL::micros();
+    // hal.console->printf("Update sensor rate now (us): %d\n", now);
     if (start_us == 0) {
         count = 0;
         start_us = now;
@@ -293,7 +294,7 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
 
 
 
-    hal.console->printf("New Accel Sample\n");
+    // hal.console->printf("New Accel Sample\n");
 
 
     /*
