@@ -192,7 +192,7 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
     // hal.console->printf("deltaConingX: %f\n", delta_coning.x);
     // hal.console->printf("deltaConingY: %f\n", delta_coning.y);
     // hal.console->printf("deltaConingZ: %f\n\n", delta_coning.z);
-    // delta_coning = delta_coning % delta_angle;
+    delta_coning = delta_coning % delta_angle;
     delta_coning *= 0.5f;
     // hal.console->printf("deltaConingX: %f\n", delta_coning.x);
     // hal.console->printf("deltaConingY: %f\n", delta_coning.y);
@@ -210,8 +210,8 @@ void AP_InertialSensor_Backend::_notify_new_gyro_raw_sample(uint8_t instance,
         _imu._last_delta_angle[instance] = delta_angle;
         _imu._last_raw_gyro[instance] = gyro;
 
-        // _imu._gyro_filtered[instance] = _imu._gyro_filter[instance].apply(gyro);
-        _imu._gyro_filtered[instance] = gyro;
+         _imu._gyro_filtered[instance] = _imu._gyro_filter[instance].apply(gyro);
+        //_imu._gyro_filtered[instance] = gyro;
         // hal.console->printf("GyrX: %f, FilteredX: %f\n", gyro.x, _imu._gyro_filtered[instance].x);
         // hal.console->printf("GyrY: %f, FilteredY: %f\n", gyro.y, _imu._gyro_filtered[instance].y);
         // hal.console->printf("GyrZ: %f, FilteredZ: %f\n\n", gyro.z, _imu._gyro_filtered[instance].z);
@@ -290,6 +290,11 @@ void AP_InertialSensor_Backend::_notify_new_accel_raw_sample(uint8_t instance,
 
     _update_sensor_rate(_imu._sample_accel_count[instance], _imu._sample_accel_start_us[instance],
                         _imu._accel_raw_sample_rates[instance]);
+
+
+
+    hal.console->printf("New Accel Sample\n");
+
 
     /*
       we have two classes of sensors. FIFO based sensors produce data
