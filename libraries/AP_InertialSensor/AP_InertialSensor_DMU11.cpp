@@ -264,26 +264,16 @@ void AP_InertialSensor_DMU11::parse_data(void)
   const float ACCEL_SCALE = -GRAVITY_MSS;
   const float GYRO_SCALE = -DEG2RAD;
 
-  uint16_t checksum_ref = 0;
-  for (int count_check = 0; count_check < 38; count_check++) {
-    checksum_ref += (uint16_t)message[count_check];
+  c2i16.c[0] = message[39];
+  c2i16.c[1] = message[38];
+  checksum = c2i16.i;
+
+  if ( !VerifyChecksum() ) {
+    update_status = false;
+    initialize_message = true;
+    hal.console->printf("Checksums not equal: return from parse_data()\n");
+    return;
   }
-
-  uint16_t checksum_ref2 = TwosCompliment(checksum_ref);
-
-
-  u_in.c[0] = message[39];
-  u_in.c[1] = message[38];
-  checksum = u_in.i16;
-
-
-  hal.console->printf("check_ref: %d   check_ref2: %d  check: %d\n", checksum_ref, checksum_ref2, checksum);
-  // if (checksum + checksum_ref != 0) {
-  //   update_status = false;
-  //   hal.console->printf("Checksum incorrect.\n");
-  //   return;
-  // }
-
 
 
   // u_float.c = {message[7],message[6],message[5],message[4]};
@@ -357,7 +347,6 @@ void AP_InertialSensor_DMU11::parse_data(void)
   //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
   //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
 
-  //AP_BoardConfig::sensor_config_error("error");
 
   // Notify of new measurements
   // _rotate_and_correct_gyro(_gyro_instance,gyro);
@@ -377,33 +366,32 @@ void AP_InertialSensor_DMU11::parse_data(void)
 
 }
 
-uint16_t AP_InertialSensor_DMU11::TwosCompliment(uint16_t Decimal_Num)
-{
-  long long BinaryNum = 0;
-  int remainder, count2 = 1;
 
-  while (Decimal_Num!=0)
-  {
-      remainder = Decimal_Num%2;
-      Decimal_Num /= 2;
-      BinaryNum += remainder*count2;
-      count2 *= 10;
+bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
+  uint16_t count = 0;
+  uint32_t sum = 0;
+  while ( count < 38 ) {
+    c2i16.c[1] = message[count];
+    c2i16.c[0] = message[count+1];
+    sum += c2i16.i;
+    count+=2;
   }
 
-  long long Binary_TwosComp = ~BinaryNum + 1;
+  // Bitwise & 0xFFFF
+  sum &= 0xFFFF;
+  uint16_t twos_comp = ~sum+1;
 
-
-  int Decimal_TwosComp = 0, count3 = 0, remainder2;
-  while (Binary_TwosComp!=0)
-  {
-      remainder2 = Binary_TwosComp%10;
-      Binary_TwosComp /= 10;
-      Decimal_TwosComp += remainder2*pow(2,count3);
-      ++count3;
+  hal.console->printf("\nChecksum: %d\n", checksum);
+  hal.console->printf("VerifyChecksum: %d\n\n", twos_comp);
+  if ( twos_comp == checksum ) {
+    hal.console->printf("VerifyChecksum: returning true\n");
+    return true;
   }
-  return Decimal_TwosComp;
+  else {
+    hal.console->printf("VerifyChecksum: returning false\n");
+    return false;
+  }
 }
-
 
 
 bool AP_InertialSensor_DMU11::update(void)
