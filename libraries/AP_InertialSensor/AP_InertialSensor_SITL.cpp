@@ -18,6 +18,7 @@ AP_InertialSensor_SITL::AP_InertialSensor_SITL(AP_InertialSensor &imu) :
 AP_InertialSensor_Backend *AP_InertialSensor_SITL::detect(AP_InertialSensor &_imu)
 {
     AP_InertialSensor_SITL *sensor = new AP_InertialSensor_SITL(_imu);
+    hal.console->printf("Initializing SITL INS\n");
     if (sensor == nullptr) {
         return nullptr;
     }

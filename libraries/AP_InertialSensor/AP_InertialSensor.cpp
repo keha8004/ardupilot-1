@@ -760,7 +760,7 @@ AP_InertialSensor::detect_backends(void)
     }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     //hal.console->printf("INS in SITL Mode\n");
-    // ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
+    //ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
     hal.console->printf("Attempting to detect dmu11\n");
     ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
     //hal.console->printf("INS in HIL Mode\n");
@@ -1712,17 +1712,17 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
 
         hal.console->printf("accel_diff: %f %f %f\n",accel_diff.x,accel_diff.y,accel_diff.z);
 
-        const float vib_tolerence = 0.001;
+        // const float vib_tolerence = 0.001;
 
-        if (accel_diff.x < vib_tolerence) {
-            accel_diff.x = vib_tolerence;
-        }
-        if (accel_diff.y < vib_tolerence) {
-            accel_diff.y = vib_tolerence;
-        }
-        if (accel_diff.z < vib_tolerence) {
-            accel_diff.z = vib_tolerence;
-        }
+        // if (accel_diff.x < vib_tolerence) {
+        //     accel_diff.x = vib_tolerence;
+        // }
+        // if (accel_diff.y < vib_tolerence) {
+        //     accel_diff.y = vib_tolerence;
+        // }
+        // if (accel_diff.z < vib_tolerence) {
+        //     accel_diff.z = vib_tolerence;
+        // }
         accel_diff.x *= accel_diff.x;
         accel_diff.y *= accel_diff.y;
         accel_diff.z *= accel_diff.z;
