@@ -190,13 +190,14 @@ void AP_InertialSensor_DMU11::accumulate(void)
           // notify_gyro_fifo_reset(_gyro_instance);
           // notify_accel_fifo_reset(_accel_instance);
           break;
+        } else {
+          update_status = true;
         }
         // parse_data();
 
       }
     } // while (nbytes-- > 0)
     return;
-
 }
 
 void AP_InertialSensor_DMU11::find_header(void)
@@ -404,12 +405,13 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
 
 bool AP_InertialSensor_DMU11::update(void)
 {
-  //hal.console->printf("Updating");
     update_status = false;
     accumulate();
     if ( !update_status ) {
+      hal.console->printf("Not updating, update_status=false\n");
       return false;
     } 
+    hal.console->printf("Updating, update_status=true\n");
 
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);

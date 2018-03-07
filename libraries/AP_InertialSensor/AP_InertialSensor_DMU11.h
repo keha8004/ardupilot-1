@@ -24,6 +24,9 @@ public:
 
   bool update(void) override;
 
+  bool first_call;
+  bool update_status;
+
 
   // update state
   // void update(void) override;
@@ -46,8 +49,6 @@ private:
   void find_header(void);
   bool VerifyChecksum(void);
   bool initialize_message;
-  bool first_call;
-  bool update_status;
   uint8_t msg_len = 0;
   float xRate,xAcc,yRate,yAcc,zRate,zAcc;
   // Union declaration to convert mem types
