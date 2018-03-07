@@ -124,7 +124,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
       // Check number of available bytes
       nbytes = uart->available();
       if (nbytes < 40) {
-        hal.console->printf("Not enough data available on DMU11.\n");
+        // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
         update_status = false;
         return;
       }
@@ -389,8 +389,8 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
   sum &= 0xFFFF;
   uint16_t twos_comp = ~sum+1;
 
-  hal.console->printf("\nChecksum: %d\n", checksum);
-  hal.console->printf("VerifyChecksum: %d\n\n", twos_comp);
+  // hal.console->printf("\nChecksum: %d\n", checksum);
+  // hal.console->printf("VerifyChecksum: %d\n\n", twos_comp);
   if ( twos_comp == checksum ) {
     // hal.console->printf("VerifyChecksum: returning true\n");
     return true;
@@ -408,7 +408,7 @@ bool AP_InertialSensor_DMU11::update(void)
     update_status = false;
     accumulate();
     if ( !update_status ) {
-      return true;
+      return false;
     } 
 
     update_accel(_accel_instance);

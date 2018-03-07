@@ -98,6 +98,8 @@ void AP_InertialSensor_SITL::generate_accel(uint8_t instance)
     _rotate_and_correct_accel(accel_instance[instance], accel);
     
     _notify_new_accel_raw_sample(accel_instance[instance], accel, AP_HAL::micros64());
+
+    //hal.console->printf("Now: %ld\n",AP_HAL::micros64());
 }
 
 /*
