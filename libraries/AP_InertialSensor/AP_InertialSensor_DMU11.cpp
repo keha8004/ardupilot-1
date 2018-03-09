@@ -192,6 +192,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
           break;
         } else {
           update_status = true;
+          break;
         }
         // parse_data();
 
@@ -408,10 +409,10 @@ bool AP_InertialSensor_DMU11::update(void)
     update_status = false;
     accumulate();
     if ( !update_status ) {
-      hal.console->printf("Not updating, update_status=false\n");
+      // hal.console->printf("Not updating, update_status=false\n");
       return false;
     } 
-    hal.console->printf("Updating, update_status=true\n");
+    // hal.console->printf("Updating, update_status=true\n");
 
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);
