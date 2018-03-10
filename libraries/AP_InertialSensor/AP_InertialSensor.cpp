@@ -1448,6 +1448,7 @@ void AP_InertialSensor::wait_for_sample(void)
         return;
     }
     uint32_t now = AP_HAL::micros();
+    uint64_t wait_for_sample_start = AP_HAL::micros64();
 
     if (_next_sample_usec == 0 && _delta_time <= 0) {
         // this is the first call to wait_for_sample()
@@ -1537,6 +1538,8 @@ check_sample:
 #endif
 
     _have_sample = true;
+    uint64_t wait_for_sample_end = AP_HAL::micros64();
+    hal.console->printf("\n\nTime in wait_for_sample: %llu\n\n", (wait_for_sample_end - wait_for_sample_start));
 }
 
 

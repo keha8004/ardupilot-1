@@ -595,6 +595,7 @@ void Plane::startup_INS_ground(void)
 
     //hal.console->printf("Entering ins.init\n");
     ins.init(scheduler.get_loop_rate_hz());
+    hal.console->printf("\n\n loop rate hz: %d\n\n", scheduler.get_loop_rate_hz());
     //hal.console->printf("Exiting ins.init\n");
 
     ahrs.reset();
