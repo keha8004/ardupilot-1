@@ -762,7 +762,7 @@ AP_InertialSensor::detect_backends(void)
     //hal.console->printf("INS in SITL Mode\n");
     // ADD_BACKEND(AP_InertialSensor_SITL::detect(*this));
     hal.console->printf("Attempting to detect dmu11\n");
-    ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+    // ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
     //hal.console->printf("INS in HIL Mode\n");
 #elif HAL_INS_DEFAULT == HAL_INS_HIL
     //ADD_BACKEND(AP_InertialSensor_HIL::detect(*this));
@@ -800,17 +800,9 @@ AP_InertialSensor::detect_backends(void)
         break;
 
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
-
-        // _fast_sampling_mask.set_default(1);
-
-        // // older Pixhawk2 boards have the MPU6000 instead of MPU9250
-    
-        // hal.console->printf("PixHawk2 backend detected\n");
-
-        // hal.console->printf("Attempting to detect Invensense\n");
+        // _fast_sampling_mask.set_default(3);
+        ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
         // ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
-
-        // hal.console->printf("Attempting to detect LSM9DS0\n");
         // ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
         //                                               hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
         //                                               hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
@@ -819,8 +811,7 @@ AP_InertialSensor::detect_backends(void)
         //                                               ROTATION_ROLL_180_YAW_90));
         // ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
 
-        // hal.console->printf("Attempting to detect dmu11\n");
-        ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+    
         break;
 
     case AP_BoardConfig::PX4_BOARD_SP01:
@@ -1008,8 +999,8 @@ bool AP_InertialSensor::get_gyro_health_all(void) const
 {
     for (uint8_t i=0; i<get_gyro_count(); i++) {
 
-        //bool health = get_gyro_health(i);
-        //hal.console->printf("gyro[%d] healthy: %s.\n", i, health ? "true" : "false");
+        // bool health = get_gyro_health(i);
+        // hal.console->printf("gyro[%d] healthy: %s.\n", i, health ? "true" : "false");
 
         if (!get_gyro_health(i)) {
             return false;
@@ -1419,6 +1410,7 @@ void AP_InertialSensor::update(void)
             }
         }
     }
+    // hal.console->printf("Primary gyro | accel: %d %d\n",_primary_gyro, _primary_accel);
     // apply notch filter to primary gyro
     _gyro[_primary_gyro] = _notch_filter.apply(_gyro[_primary_gyro]);
     
@@ -1742,7 +1734,7 @@ void AP_InertialSensor::set_accel_peak_hold(uint8_t instance, const Vector3f &ac
     }
     uint32_t now = AP_HAL::millis();
 
-    // negative x peak(min) hold detector
+    // negative x peak(min) hold detectorf
     if (accel.x < _peak_hold_state.accel_peak_hold_neg_x ||
         _peak_hold_state.accel_peak_hold_neg_x_age <= now) {
         _peak_hold_state.accel_peak_hold_neg_x = accel.x;

@@ -34,7 +34,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_HAL/utility/RingBuffer.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
-//#include <float.h>
 #include <cmath>
 #include "AP_InertialSensor_DMU11.h"
 
@@ -95,47 +94,81 @@ void AP_InertialSensor_DMU11::start(void)
 // Copy filtered data to frontend
 void AP_InertialSensor_DMU11::accumulate(void)
 {
+    if (update_status == true) {
+      return;
+    }
+
+
     if (uart == nullptr) {
         AP_BoardConfig::sensor_config_error("Error: UART port not configured");
     }
-    //AP_BoardConfig::sensor_config_error("error");
 
     /*
       If this is the first read, the message buffer needs to be initialized
       such that the header line 0x55AA occupies the first two indices of the buffer
     */
 
+    // if (first_call) {
+    //   hal.console->printf("First call also fuck you!\n");
+    //   nbytes = uart->available();
+    //   // hal.console->printf("First nbytes = %d\n", nbytes);
+    //   uint32_t first = AP_HAL::micros();
+    //   // hal.console->printf("first: %d\n", first);
+    //   while (nbytes-- > 0) {
+    //     c = uart->read();
+    //   }
+    //   uint32_t last = AP_HAL::micros();
+    //   // hal.console->printf("first: %d\n", last);
+    //   if ( (last-first) < 5000 ) {
+    //     uint64_t wait = 5000 - (last-first);
+    //     hal.scheduler->delay_microseconds(wait);
+    //     first_call = false;
+    //   }
+    // }
+
     if (first_call) {
       hal.console->printf("First call also fuck you!\n");
       nbytes = uart->available();
-      uint64_t first = AP_HAL::micros64();
+      // hal.console->printf("First nbytes = %d\n", nbytes);
+      // hal.console->printf("first: %d\n", first);
       while (nbytes-- > 0) {
         c = uart->read();
       }
-      uint64_t last = AP_HAL::micros64();
-      if ( (last-first) < 5000 ) {
-        uint64_t wait = 5000 - (last-first);
-        hal.scheduler->delay_microseconds(wait);
-        first_call = false;
+      // hal.console->printf("first: %d\n", last);
+      hal.scheduler->delay_microseconds(5000);
+      first_call = false;
+    }
+
+
+      // Check number of available bytes
+      nbytes = uart->available();
+      // hal.console->printf("nbytes = %d\n", nbytes);
+      while (nbytes < 40) {
+        // hal.console->printf("Not enough data (%d).\n",nbytes);
+        // update_status = false;
+        hal.scheduler->delay_microseconds(20);
+        nbytes = uart->available();
+        // return;
+      }
+
+    if (nbytes > 500) {
+      // hal.console->printf("Clearing bytes\n");
+      while (nbytes-- > 400) {
+        c = uart->read();
       }
     }
 
-    //if (initialize_message) {
-      // Check number of available bytes
-      nbytes = uart->available();
-      if (nbytes < 40) {
-        // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
-        update_status = false;
-        return;
-      }
+
+    // for (int nbytes_skip = 0 ; nbytes_skip < 160 ; nbytes_skip++) {
+    //   c = uart->read();
+    //   nbytes = uart->available();
+    // }
 
       c = uart->read();
       nbytes--;
 
       if (c != HEADER1) {
           // hal.console->printf("Buffer reset on HEADER1\n");
-          // notify_gyro_fifo_reset(_gyro_instance);
-          // notify_accel_fifo_reset(_accel_instance);
           initialize_message = true;
           find_header();
           if (initialize_message == true) {
@@ -143,15 +176,12 @@ void AP_InertialSensor_DMU11::accumulate(void)
             update_status = false;
             return;
           }
-        }
-        else {
+        } else {
           message[0] = c;
           c = uart->read();
           nbytes--;
           if (c != HEADER2) {
             hal.console->printf("Buffer reset on HEADER2\n");
-            // notify_gyro_fifo_reset(_gyro_instance);
-            // notify_accel_fifo_reset(_accel_instance);
             initialize_message = true;
             find_header();
             if (initialize_message == true) {
@@ -159,16 +189,22 @@ void AP_InertialSensor_DMU11::accumulate(void)
               update_status = false;
               return;
             }
-          }
-          else {
+          } else {
             message[1] = c;
             msg_len = 2;
           }
         }
 
+      if (nbytes < 38) {
+        // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
+        hal.console->printf("Not DMU11.\n");
+        update_status = false;
+        return;
+      }
+
 //// Now the message buffer has been initialized and can be filled normally
     // Check number of available bytes
-    nbytes = uart->available();
+    // nbytes = uart->available();
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
 
@@ -187,8 +223,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
           been processed.
         */
         if ( !parse_data() ) {
-          // notify_gyro_fifo_reset(_gyro_instance);
-          // notify_accel_fifo_reset(_accel_instance);
           break;
         } else {
           update_status = true;
@@ -207,12 +241,10 @@ void AP_InertialSensor_DMU11::find_header(void)
 
         // read byte from buffer
         c = uart->read();
-
         // check for header line 0x55AA
         if (c != HEADER1) {
             continue;
         }
-        //hal.console->printf("char: %c\n", c);
         tmp_c = c;
         // We found 0x55, now need to do another read to verify that
         // the next byte is 0xAA
@@ -259,18 +291,12 @@ bool AP_InertialSensor_DMU11::parse_data(void)
       19      Checksum      16 bit    38-39
   */
 
-
-  // Debug
-  parse_count++;
-  // hal.console->printf("Calls to parse_data(): %d\n", parse_count);
   // Use union to extract meaningful data and convert to the approriate types
-  // uint64_t now = AP_HAL::micros64();
-  // hal.console->printf("Sample micros: %lu\n\n", now);
 
 
   // Unit Conversion Multipliers
   const float ACCEL_SCALE = GRAVITY_MSS;
-  const float GYRO_SCALE = -DEG2RAD;
+  const float GYRO_SCALE = DEG2RAD;
 
   c2i16.c[0] = message[39];
   c2i16.c[1] = message[38];
@@ -283,97 +309,63 @@ bool AP_InertialSensor_DMU11::parse_data(void)
     return false;
   }
 
-
-  // u_float.c = {message[7],message[6],message[5],message[4]};
-  // xRate = u_float.f;
   u_float.c[0] = message[7];
   u_float.c[1] = message[6];
   u_float.c[2] = message[5];
   u_float.c[3] = message[4];
   xRate = u_float.f;
-  // hal.console->printf("xRate: %f  ",xRate);
   xRate *= GYRO_SCALE;
 
-
-  // u_float.c = {message[11],message[10],message[9],message[8]};
-  // xAcc = u_float.f;
   u_float.c[0] = message[11];
   u_float.c[1] = message[10];
   u_float.c[2] = message[9];
   u_float.c[3] = message[8];
   xAcc = u_float.f;
-  // hal.console->printf("xAcc: %f\n  ",xAcc);
   xAcc *= ACCEL_SCALE;
 
-  // u_float.c = {message[15],message[14],message[13],message[12]};
-  // yRate = u_float.f;
   u_float.c[0] = message[15];
   u_float.c[1] = message[14];
   u_float.c[2] = message[13];
   u_float.c[3] = message[12];
   yRate = u_float.f;
-  // hal.console->printf("yRate: %f  ",yRate);
   yRate *= GYRO_SCALE;
 
-  // u_float.c = {message[19],message[18],message[17],message[16]};
-  // yAcc = u_float.f;
   u_float.c[0] = message[19];
   u_float.c[1] = message[18];
   u_float.c[2] = message[17];
   u_float.c[3] = message[16];
   yAcc = u_float.f;
-  // hal.console->printf("yAcc: %f\n  ",yAcc);
   yAcc *= ACCEL_SCALE;
 
-  // u_float.c = {message[23],message[22],message[21],message[20]};
-  // zRate = u_float.f;
   u_float.c[0] = message[23];
   u_float.c[1] = message[22];
   u_float.c[2] = message[21];
   u_float.c[3] = message[20];
   zRate = u_float.f;
-  // hal.console->printf("zRate: %f  ",zRate);
   zRate *= GYRO_SCALE;
 
-  // u_float.c = {message[27],message[26],message[25],message[24]};
-  // zAcc = u_float.f;
   u_float.c[0] = message[27];
   u_float.c[1] = message[26];
   u_float.c[2] = message[25];
   u_float.c[3] = message[24];
   zAcc = u_float.f;
   zAcc *= ACCEL_SCALE;
-  // hal.console->printf("zAcc: %f\n  ",zAcc);
 
   // Save to imu data types
   Vector3f gyro = Vector3f(xRate,yRate,zRate);
-  // gyro *= -DEG2RAD;
-
   Vector3f accel = Vector3f(xAcc,yAcc,zAcc);
-  // accel *= -GRAVITY_MSS;
-
-  //hal.console->printf("Acc: %f %f %f\n",accel.x,accel.y,accel.z);
-  //hal.console->printf("Gyro: %f %f %f\n",gyro.x,gyro.y,gyro.z);
-
 
   // Notify of new measurements
   _rotate_and_correct_gyro(_gyro_instance,gyro);
-  // _notify_new_gyro_raw_sample(_gyro_instance,gyro);
-   _notify_new_gyro_raw_sample(_gyro_instance,gyro,AP_HAL::micros64());
-
-   // hal.console->printf("Now (us): %lu\n", AP_HAL::micros64());
+  _notify_new_gyro_raw_sample(_gyro_instance,gyro,AP_HAL::micros64());
 
   _rotate_and_correct_accel(_accel_instance,accel);
-  // _notify_new_accel_raw_sample(_accel_instance,accel);
   _notify_new_accel_raw_sample(_accel_instance,accel,AP_HAL::micros64());
-
-  //AP_BoardConfig::sensor_config_error("error");
 
   msg_len = 0;
 
   update_status = true;
   return true;
-
 }
 
 
@@ -391,14 +383,11 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
   sum &= 0xFFFF;
   uint16_t twos_comp = ~sum+1;
 
-  // hal.console->printf("\nChecksum: %d\n", checksum);
-  // hal.console->printf("VerifyChecksum: %d\n\n", twos_comp);
   if ( twos_comp == checksum ) {
-    // hal.console->printf("VerifyChecksum: returning true\n");
     return true;
   }
   else {
-    // hal.console->printf("VerifyChecksum: returning false\n");
+    hal.console->printf("%d %d\n",twos_comp,checksum);
     return false;
   }
 }
@@ -406,16 +395,16 @@ bool AP_InertialSensor_DMU11::VerifyChecksum(void) {
 
 bool AP_InertialSensor_DMU11::update(void)
 {
-    update_status = false;
+    // update_status = false;
     accumulate();
     if ( !update_status ) {
-      // hal.console->printf("Not updating, update_status=false\n");
       return false;
     } 
-    // hal.console->printf("Updating, update_status=true\n");
 
     update_accel(_accel_instance);
     update_gyro(_gyro_instance);
+
+    update_status = false;
 
     return true;
 }

@@ -54,7 +54,8 @@ const AP_Param::GroupInfo AP_Scheduler::var_info[] = {
     // @Values: 50:50Hz,100:100Hz,200:200Hz,250:250Hz,300:300Hz,400:400Hz
     // @RebootRequired: True
     // @User: Advanced
-    AP_GROUPINFO("LOOP_RATE",  1, AP_Scheduler, _loop_rate_hz, SCHEDULER_DEFAULT_LOOP_RATE),
+    //AP_GROUPINFO("LOOP_RATE",  1, AP_Scheduler, _loop_rate_hz, SCHEDULER_DEFAULT_LOOP_RATE),
+    AP_GROUPINFO("LOOP_RATE",  1, AP_Scheduler, _loop_rate_hz, 200),
 
     AP_GROUPEND
 };

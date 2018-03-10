@@ -310,6 +310,8 @@ void Plane::update_sensor_status_flags(void)
     }
 #endif
     if (!ins.get_gyro_health_all() || !ins.gyro_calibrated_ok_all()) {
+        // hal.console->printf("get_gyro_health: %s",ins.get_gyro_health_all() ? "true":"false");
+        // hal.console->printf("gyro_calibrated_ok_all: %s",ins.gyro_calibrated_ok_all() ? "true":"false");
         control_sensors_health &= ~MAV_SYS_STATUS_SENSOR_3D_GYRO;
     }
     if (!ins.get_accel_health_all()) {
