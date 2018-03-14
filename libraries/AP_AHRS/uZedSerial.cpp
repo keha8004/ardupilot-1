@@ -12,9 +12,11 @@ extern const AP_HAL::HAL& hal;
 // thinking somthing to do with AP_AHRS since thats where where our switch is
 AP_uZedSerial::AP_uZedSerial(AP_SerialManager &serial_manager)
 {
+  hal.console->printf("Creating new MicroZed obj\n");
   uart = serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0);
   if (uart != nullptr) {
     uart->begin(serial_manager.find_baudrate(AP_SerialManager::SerialProtocol_uZed,0));
+    hal.console->printf("Started sensor on uartD\n");
   }
 }
 

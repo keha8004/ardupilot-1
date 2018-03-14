@@ -27,10 +27,6 @@ public:
   bool first_call;
   bool update_status;
 
-
-  // update state
-  // void update(void) override;
-
 private:
   int16_t nbytes;
   char c;

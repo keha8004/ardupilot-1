@@ -12,5 +12,6 @@ public:
   
 private:
   AP_HAL::UARTDriver *uart = nullptr;
+  int16_t nbytes;
   // bool send_telem();
 };

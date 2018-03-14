@@ -127,7 +127,7 @@ void AP_InertialSensor_DMU11::accumulate(void)
     // }
 
     if (first_call) {
-      hal.console->printf("First call also fuck you!\n");
+      // hal.console->printf("First call\n");
       nbytes = uart->available();
       // hal.console->printf("First nbytes = %d\n", nbytes);
       // hal.console->printf("first: %d\n", first);
@@ -158,53 +158,45 @@ void AP_InertialSensor_DMU11::accumulate(void)
       }
     }
 
+    c = uart->read();
+    nbytes--;
 
-    // for (int nbytes_skip = 0 ; nbytes_skip < 160 ; nbytes_skip++) {
-    //   c = uart->read();
-    //   nbytes = uart->available();
-    // }
-
-      c = uart->read();
-      nbytes--;
-
-      if (c != HEADER1) {
-          // hal.console->printf("Buffer reset on HEADER1\n");
-          initialize_message = true;
-          find_header();
-          if (initialize_message == true) {
-            hal.console->printf("Unable to reset buffer on HEADER1\n");
-            update_status = false;
-            return;
-          }
-        } else {
-          message[0] = c;
-          c = uart->read();
-          nbytes--;
-          if (c != HEADER2) {
-            hal.console->printf("Buffer reset on HEADER2\n");
-            initialize_message = true;
-            find_header();
-            if (initialize_message == true) {
-              hal.console->printf("Unable to reset buffer on HEADER2\n");
-              update_status = false;
-              return;
-            }
-          } else {
-            message[1] = c;
-            msg_len = 2;
-          }
-        }
-
-      if (nbytes < 38) {
-        // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
-        hal.console->printf("Not DMU11.\n");
+    if (c != HEADER1) {
+      // hal.console->printf("Buffer reset on HEADER1\n");
+      initialize_message = true;
+      find_header();
+      if (initialize_message == true) {
+        // hal.console->printf("Unable to reset buffer on HEADER1\n");
         update_status = false;
         return;
       }
+    } else {
+      message[0] = c;
+      c = uart->read();
+      nbytes--;
+      if (c != HEADER2) {
+        // hal.console->printf("Buffer reset on HEADER2\n");
+        initialize_message = true;
+        find_header();
+        if (initialize_message == true) {
+          // hal.console->printf("Unable to reset buffer on HEADER2\n");
+          update_status = false;
+          return;
+        }
+      } else {
+        message[1] = c;
+        msg_len = 2;
+      }
+    }
 
-//// Now the message buffer has been initialized and can be filled normally
-    // Check number of available bytes
-    // nbytes = uart->available();
+    if (nbytes < 38) {
+      // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
+      // hal.console->printf("Not DMU11.\n");
+      update_status = false;
+      return;
+    }
+
+    // Now the message buffer has been initialized and can be filled normally
     while (nbytes-- > 0) {
       message[msg_len++] = uart->read();
 
@@ -228,8 +220,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
           update_status = true;
           break;
         }
-        // parse_data();
-
       }
     } // while (nbytes-- > 0)
     return;
@@ -265,7 +255,7 @@ void AP_InertialSensor_DMU11::find_header(void)
           break;  // Break out of while loop
       } // while(nbytes-->0)
       if (initialize_message == true) {
-        hal.console->printf("Failed to initialize DMU message\n");
+        // hal.console->printf("Failed to initialize DMU message\n");
       }
       return;
 }
@@ -305,7 +295,7 @@ bool AP_InertialSensor_DMU11::parse_data(void)
   if ( !VerifyChecksum() ) {
     update_status = false;
     initialize_message = true;
-    hal.console->printf("Checksums not equal: return from parse_data()\n");
+    // hal.console->printf("Checksums not equal: return from parse_data()\n");
     return false;
   }
 
