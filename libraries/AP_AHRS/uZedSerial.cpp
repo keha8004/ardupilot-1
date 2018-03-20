@@ -25,20 +25,20 @@ bool AP_uZedSerial::detect(AP_SerialManager &serial_manager)
   return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
 }
 
-bool AP_uZedSerial::get_flag(int16_t &agc_flag)
-{
-  if (uart == nullptr) {
-    return false;
-  }
- int16_t nbytes = uart->available();
- if (nbytes == 0) {
-   return false;
- } else {
-   char c = uart->read();
-   agc_flag = (int16_t)c;
- }
- return true;
-}
+// bool AP_uZedSerial::get_flag(int16_t &agc_flag)
+// {
+//   if (uart == nullptr) {
+//     return false;
+//   }
+//  int16_t nbytes = uart->available();
+//  if (nbytes == 0) {
+//    return false;
+//  } else {
+//    char c = uart->read();
+//    agc_flag = (int16_t)c;
+//  }
+//  return true;
+// }
 
 // bool AP_uZedSerial::send_telem()
 // {

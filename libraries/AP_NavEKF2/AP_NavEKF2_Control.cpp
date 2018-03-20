@@ -154,6 +154,10 @@ void NavEKF2_core::setWindMagStateLearningMode()
 }
 
 // Set inertial navigation aiding mode
+//
+// AID_NONE: 
+// AID_RELATIVE: 
+// AID_ABSOLUTE: 
 void NavEKF2_core::setAidingMode()
 {
     // Save the previous status so we can detect when it has changed
@@ -166,7 +170,12 @@ void NavEKF2_core::setAidingMode()
     agc_feedback = agc.y;
 
     if (agc_feedback != agc_feedback_prev) {
-        gcs().send_text(MAV_SEVERITY_INFO, "EKF: %d %d.", (int)agc_feedback_prev, (int)agc_feedback);
+        // gcs().send_text(MAV_SEVERITY_INFO, "EKF: %d %d.", (int)agc_feedback_prev, (int)agc_feedback);
+        if (agc_feedback == 1) {
+            gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
+        } else if (agc_feedback == 0) {
+            gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
+        }
     }
 
     // Determine if we should change aiding mode
@@ -266,7 +275,8 @@ void NavEKF2_core::setAidingMode()
             rngBcnTimeout = true;
             gpsNotAvailable = true;
         } else if (agc_feedback == 1) {
-            PV_AidingMode = AID_RELATIVE;
+            // PV_AidingMode = AID_RELATIVE;
+            PV_AidingMode = AID_NONE;
         }
         }
         break;
