@@ -22,10 +22,10 @@ AP_uZedSerial::AP_uZedSerial()
 }
 
 
-bool AP_uZedSerial::detect()
-{
-  return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
-}
+// bool AP_uZedSerial::detect()
+// {
+//   return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
+// }
 
 bool AP_uZedSerial::get_flag(int16_t &agc_flag)
 {

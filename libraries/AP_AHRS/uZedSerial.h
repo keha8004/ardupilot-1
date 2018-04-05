@@ -8,7 +8,7 @@ class AP_uZedSerial
 public:
   AP_uZedSerial();
   // static bool detect(AP_SerialManager &serial_manager);
-  void get_flag();
+  bool get_flag();
   
 private:
   	AP_HAL::UARTDriver *uart = nullptr;
