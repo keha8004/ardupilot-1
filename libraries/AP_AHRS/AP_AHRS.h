@@ -106,6 +106,7 @@ public:
     }
 
      // Signal from payload (0: GPS available, 1: no GPS available)
+    int16_t *agc_feedback_ptr;
     int16_t agc_feedback;
     int16_t agc_feedback_prev;
     int16_t randswitch;
