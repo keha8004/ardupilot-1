@@ -108,29 +108,8 @@ void AP_InertialSensor_DMU11::accumulate(void)
       such that the header line 0x55AA occupies the first two indices of the buffer
     */
 
-    // if (first_call) {
-    //   hal.console->printf("First call also fuck you!\n");
-    //   nbytes = uart->available();
-    //   // hal.console->printf("First nbytes = %d\n", nbytes);
-    //   uint32_t first = AP_HAL::micros();
-    //   // hal.console->printf("first: %d\n", first);
-    //   while (nbytes-- > 0) {
-    //     c = uart->read();
-    //   }
-    //   uint32_t last = AP_HAL::micros();
-    //   // hal.console->printf("first: %d\n", last);
-    //   if ( (last-first) < 5000 ) {
-    //     uint64_t wait = 5000 - (last-first);
-    //     hal.scheduler->delay_microseconds(wait);
-    //     first_call = false;
-    //   }
-    // }
-
     if (first_call) {
-      // hal.console->printf("First call\n");
       nbytes = uart->available();
-      // hal.console->printf("First nbytes = %d\n", nbytes);
-      // hal.console->printf("first: %d\n", first);
       while (nbytes-- > 0) {
         c = uart->read();
       }
@@ -142,17 +121,12 @@ void AP_InertialSensor_DMU11::accumulate(void)
 
       // Check number of available bytes
       nbytes = uart->available();
-      // hal.console->printf("nbytes = %d\n", nbytes);
       while (nbytes < 40) {
-        // hal.console->printf("Not enough data (%d).\n",nbytes);
-        // update_status = false;
         hal.scheduler->delay_microseconds(20);
         nbytes = uart->available();
-        // return;
       }
 
     if (nbytes > 500) {
-      // hal.console->printf("Clearing bytes\n");
       while (nbytes-- > 400) {
         c = uart->read();
       }
@@ -162,11 +136,9 @@ void AP_InertialSensor_DMU11::accumulate(void)
     nbytes--;
 
     if (c != HEADER1) {
-      // hal.console->printf("Buffer reset on HEADER1\n");
       initialize_message = true;
       find_header();
       if (initialize_message == true) {
-        // hal.console->printf("Unable to reset buffer on HEADER1\n");
         update_status = false;
         return;
       }
@@ -175,11 +147,9 @@ void AP_InertialSensor_DMU11::accumulate(void)
       c = uart->read();
       nbytes--;
       if (c != HEADER2) {
-        // hal.console->printf("Buffer reset on HEADER2\n");
         initialize_message = true;
         find_header();
         if (initialize_message == true) {
-          // hal.console->printf("Unable to reset buffer on HEADER2\n");
           update_status = false;
           return;
         }
@@ -190,8 +160,6 @@ void AP_InertialSensor_DMU11::accumulate(void)
     }
 
     if (nbytes < 38) {
-      // hal.console->printf("Not enough data available on DMU11 (bytes=%d).\n",nbytes);
-      // hal.console->printf("Not DMU11.\n");
       update_status = false;
       return;
     }
@@ -281,9 +249,6 @@ bool AP_InertialSensor_DMU11::parse_data(void)
       19      Checksum      16 bit    38-39
   */
 
-  // Use union to extract meaningful data and convert to the approriate types
-
-
   // Unit Conversion Multipliers
   const float ACCEL_SCALE = GRAVITY_MSS;
   const float GYRO_SCALE = DEG2RAD;
@@ -292,6 +257,7 @@ bool AP_InertialSensor_DMU11::parse_data(void)
   c2i16.c[1] = message[38];
   checksum = c2i16.i;
 
+  // Verify integrity of checksum 
   if ( !VerifyChecksum() ) {
     update_status = false;
     initialize_message = true;
@@ -299,6 +265,7 @@ bool AP_InertialSensor_DMU11::parse_data(void)
     return false;
   }
 
+    // Use union to extract meaningful data and convert to the approriate types
   u_float.c[0] = message[7];
   u_float.c[1] = message[6];
   u_float.c[2] = message[5];

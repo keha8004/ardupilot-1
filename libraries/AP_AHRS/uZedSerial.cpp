@@ -10,9 +10,10 @@ extern const AP_HAL::HAL& hal;
 
 // Constructor: not entirely sure what should go in here at the moment. I'm
 // thinking somthing to do with AP_AHRS since thats where where our switch is
-AP_uZedSerial::AP_uZedSerial(AP_SerialManager &serial_manager)
+AP_uZedSerial::AP_uZedSerial()
 {
   hal.console->printf("Creating new MicroZed obj\n");
+  AP_SerialManager &serial_manager = AP::serialmanager();
   uart = serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0);
   if (uart != nullptr) {
     uart->begin(serial_manager.find_baudrate(AP_SerialManager::SerialProtocol_uZed,0));
@@ -20,7 +21,7 @@ AP_uZedSerial::AP_uZedSerial(AP_SerialManager &serial_manager)
   }
 }
 
-bool AP_uZedSerial::detect(AP_SerialManager &serial_manager)
+bool AP_uZedSerial::detect()
 {
   return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
 }
