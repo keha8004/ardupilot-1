@@ -137,27 +137,45 @@ Vector3i AP_AHRS::get_agc_feedback(void)
 {
     agc_feedback_prev = agc_feedback;
 
+
     // get GPS coordinates
-    const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
+    // const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
     // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
 
+
+
+    //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
+    agc_feedback = 0;
+
+
+    //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
+    // const int32_t lat_grd_test = 400000000;
+
+    // if (GPS_lat <= lat_grd_test) {  
+    //     agc_feedback = 1;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
+    // } else {
+    //     agc_feedback = 0;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
+    // }
+
+
+
+    //////////////////////////////   Rectangle GPS-Denied //////////////////////////////////////////
     // set up 500m x 500m GPS-denied square
     // const int32_t lat_jam_start = 401435834;
     // const int32_t lat_jam_end = 401480864;
     // const int32_t lon_jam_start = -1052184677;
     // const int32_t lon_jam_end = -1052126002;
 
-
-    const int32_t lat_grd_test = 400000000;
-
     //if (GPS_lat >= lat_jam_start && GPS_lng >= lon_jam_start && GPS_lat <= lat_jam_end && GPS_lng <= lon_jam_end) {
-    if (GPS_lat <= lat_grd_test) {  
-        agc_feedback = 1;
-        // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
-    } else {
-        agc_feedback = 0;
-        // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
-    }
+    //     agc_feedback = 1;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
+    // } else {
+    //     agc_feedback = 0;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
+    // }
+
 
 /*
   AP_uZedSerial::get_flag(agc_feedback) is calling the method
