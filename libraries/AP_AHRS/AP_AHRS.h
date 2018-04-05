@@ -30,6 +30,7 @@
 #include <AP_Baro/AP_Baro.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_InertialSensor/AP_InertialSensor_DMU11.h>
+#include "uZedSerial.h"
 
 class OpticalFlow;
 #define AP_AHRS_TRIM_LIMIT 10.0f        // maximum trim angle in degrees
@@ -106,12 +107,13 @@ public:
     }
 
      // Signal from payload (0: GPS available, 1: no GPS available)
-    int16_t *agc_feedback_ptr;
     int16_t agc_feedback;
     int16_t agc_feedback_prev;
     int16_t randswitch;
     Vector3i _agc;
+    Vector3i *agc_ptr = &_agc;
     uint32_t last_flag_ms;
+    AP_uZedSerial uZed;
 
     // empty virtual destructor
     virtual ~AP_AHRS() {}

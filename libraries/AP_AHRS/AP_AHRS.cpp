@@ -191,11 +191,15 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     }
 */
 
-    // Vector containing AGC switch data
-    Vector3i agc = {agc_feedback_prev,agc_feedback,0};
+    if (uZed.get_flag(*agc_ptr)) {
+        hal.console->printf("Read in agc data\n");
+    }
 
-    _agc = agc;
-    return agc;
+    // Vector containing AGC switch data
+    // Vector3i agc = {agc_feedback_prev,agc_feedback,0};
+
+    // _agc = agc;
+    return _agc;
 
 }
 
