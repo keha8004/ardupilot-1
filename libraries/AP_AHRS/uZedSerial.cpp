@@ -10,7 +10,8 @@ extern const AP_HAL::HAL& hal;
 
 // Constructor: not entirely sure what should go in here at the moment. I'm
 // thinking somthing to do with AP_AHRS since thats where where our switch is
-AP_uZedSerial::AP_uZedSerial()
+AP_uZedSerial::AP_uZedSerial() :
+first_call(true)
 {
   hal.console->printf("Creating new MicroZed obj\n");
   AP_SerialManager &serial_manager = AP::serialmanager();
@@ -27,21 +28,29 @@ AP_uZedSerial::AP_uZedSerial()
 //   return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
 // }
 
-bool AP_uZedSerial::get_flag(int16_t &agc_flag)
+bool AP_uZedSerial::get_flag(Vector3i &agc)
 {
-  if (uart == nullptr) {
-  	agc_flag = 0;
-    return;
-  }
- int16_t nbytes = uart->available();
- if (nbytes == 0) {
- 	agc_flag = 0;
-   return false;
- } else {
-   char c = uart->read();
-   agc_flag = (int16_t)c;
- }
- return true;
+	if (uart == nullptr) {
+    	return false;
+  	}
+  	if (first_call) {
+  		nbytes = uart->available();
+  		while (nbytes-- > 0) {
+  			tmp_c = uart->read();
+  		}
+  		first_call = false;
+  	}
+
+  	nbytes = uart->available();
+ 	if (nbytes == 0) {
+   		return false;
+ 	} else {
+   		c = uart->read();
+   		agc[1] = agc[0];
+   		agc[0] = (int16_t)c;
+   		hal.console->printf("agc_feedback: %d\n", agc[0]);
+ 	}
+ 	return true;
 }
 
 // bool AP_uZedSerial::send_telem()
