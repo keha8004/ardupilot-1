@@ -258,6 +258,8 @@ void AP_SerialManager::init()
                                          AP_SERIALMANAGER_UZED_BUFSIZE_RX,
                                          AP_SERIALMANAGER_UZED_BUFSIZE_TX);
                     state[i].uart->set_flow_control(AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE);
+                    hal.console->printf("MZ on uartD (%p) at %d baud (protocol %d)\n",state[4].uart,(int32_t)state[i].baud,(int8_t)state[i].protocol);
+
                     break;
             }
         }
