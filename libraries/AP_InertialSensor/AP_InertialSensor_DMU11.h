@@ -24,6 +24,8 @@ public:
 
   bool update(void) override;
 
+  static bool detect();
+
   bool first_call;
   bool update_status;
 

@@ -801,15 +801,25 @@ AP_InertialSensor::detect_backends(void)
 
     case AP_BoardConfig::PX4_BOARD_PIXHAWK2:
         _fast_sampling_mask.set_default(3);
-        // ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
-        ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
-        ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
-                                                      hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
-                                                      hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
-                                                      ROTATION_ROLL_180_YAW_270,
-                                                      ROTATION_ROLL_180_YAW_90,
-                                                      ROTATION_ROLL_180_YAW_90));
-        ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
+        if (AP_InertialSensor_DMU11::detect()) {
+            ADD_BACKEND(AP_InertialSensor_DMU11::probe(*this));
+            ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
+            ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
+                                                          hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
+                                                          hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
+                                                          ROTATION_ROLL_180_YAW_270,
+                                                          ROTATION_ROLL_180_YAW_90,
+                                                          ROTATION_ROLL_180_YAW_90));
+        } else {
+            ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_EXT_NAME), ROTATION_PITCH_180));
+            ADD_BACKEND(AP_InertialSensor_LSM9DS0::probe(*this,
+                                                          hal.spi->get_device(HAL_INS_LSM9DS0_EXT_G_NAME),
+                                                          hal.spi->get_device(HAL_INS_LSM9DS0_EXT_A_NAME),
+                                                          ROTATION_ROLL_180_YAW_270,
+                                                          ROTATION_ROLL_180_YAW_90,
+                                                          ROTATION_ROLL_180_YAW_90));
+            ADD_BACKEND(AP_InertialSensor_Invensense::probe(*this, hal.spi->get_device(HAL_INS_MPU9250_NAME), ROTATION_YAW_270));
+        }
 
     
         break;

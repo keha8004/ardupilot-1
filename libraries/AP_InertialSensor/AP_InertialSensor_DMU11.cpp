@@ -63,6 +63,14 @@ AP_InertialSensor_DMU11::AP_InertialSensor_DMU11(AP_InertialSensor &imu) :
     }
 }
 
+bool AP_InertialSensor_DMU11::detect()
+{
+  // AP_SerialManager &serial_manager = AP::serialmanager();
+  // return serial_manager.find_serial(AP_SerialManager::SerialProtocol_DMU11,0) != nullptr;
+  int16_t bytes = hal.uartE->available();
+  return (bytes > 0);
+}
+
 // Probe for detected uartE sensor
 AP_InertialSensor_Backend *AP_InertialSensor_DMU11::probe(AP_InertialSensor &imu)
 {
