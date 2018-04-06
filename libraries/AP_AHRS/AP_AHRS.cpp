@@ -149,9 +149,10 @@ Vector3i AP_AHRS::get_agc_feedback(void)
 
 
     //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
-    // const int32_t lat_grd_test = 400000000;
+    // const int32_t lat_grd_test1 = 400000000;
+    // const int32_t lat_grd_test2 = 399641550;
 
-    // if (GPS_lat <= lat_grd_test) {  
+    // if ((GPS_lat <= lat_grd_test1) && (GPS_lat >= lat_grd_test2)) {  
     //     agc_feedback = 1;
     //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
     // } else {
