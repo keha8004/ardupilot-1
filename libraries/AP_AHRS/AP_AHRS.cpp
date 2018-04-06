@@ -196,7 +196,7 @@ Vector3i AP_AHRS::get_agc_feedback(void)
         // hal.console->printf("MicroZed Detected\n");
         AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
         if (uZed->get_flag(*agc_ptr)) {
-            // hal.console->printf("Read in agc data\n");
+            hal.console->printf("Read in agc data\n");
         } 
     } 
 
