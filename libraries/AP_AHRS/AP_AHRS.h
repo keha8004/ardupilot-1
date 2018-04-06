@@ -110,10 +110,10 @@ public:
     int16_t agc_feedback;
     int16_t agc_feedback_prev;
     int16_t randswitch;
-    Vector3i _agc;
+    Vector3i _agc = {0,0,0};
     Vector3i *agc_ptr = &_agc;
     uint32_t last_flag_ms;
-    AP_uZedSerial uZed;
+    // AP_uZedSerial uZed;
 
     // empty virtual destructor
     virtual ~AP_AHRS() {}

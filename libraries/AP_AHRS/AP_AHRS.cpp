@@ -18,7 +18,8 @@
 #include "AP_AHRS_View.h"
 #include <AP_HAL/AP_HAL.h>
 #include <GCS_MAVLink/GCS.h>
-#include <AP_InertialSensor/AP_InertialSensor_DMU11.h>
+#include "AP_InertialSensor/AP_InertialSensor_DMU11.h"
+#include "uZedSerial.h"
 
 extern const AP_HAL::HAL& hal;
 
@@ -135,9 +136,7 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
 
 Vector3i AP_AHRS::get_agc_feedback(void)
 {
-    agc_feedback_prev = agc_feedback;
-
-
+    
     // get GPS coordinates
     // const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
     // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
@@ -145,7 +144,8 @@ Vector3i AP_AHRS::get_agc_feedback(void)
 
 
     //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
-    agc_feedback = 0;
+    // agc_feedback_prev = agc_feedback;
+    // agc_feedback = 0;
 
 
     //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
@@ -191,9 +191,13 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     }
 */
 
-    if (uZed.get_flag(*agc_ptr)) {
-        hal.console->printf("Read in agc data\n");
-    }
+    if (AP_uZedSerial::detect()) {
+        // hal.console->printf("MicroZed Detected\n");
+        AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
+        if (uZed->get_flag(*agc_ptr)) {
+            // hal.console->printf("Read in agc data\n");
+        } 
+    } 
 
     // Vector containing AGC switch data
     // Vector3i agc = {agc_feedback_prev,agc_feedback,0};

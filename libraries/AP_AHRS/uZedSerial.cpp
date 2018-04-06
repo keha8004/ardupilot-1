@@ -8,6 +8,8 @@
 extern const AP_HAL::HAL& hal;
 
 
+AP_uZedSerial *AP_uZedSerial::_instance = nullptr;
+
 // Constructor: not entirely sure what should go in here at the moment. I'm
 // thinking somthing to do with AP_AHRS since thats where where our switch is
 AP_uZedSerial::AP_uZedSerial() :
@@ -22,11 +24,19 @@ first_call(true)
   }
 }
 
+AP_uZedSerial *AP_uZedSerial::get_instance()
+{
+  if (!_instance) {
+    _instance = new AP_uZedSerial();
+  }
+  return _instance;
+}
 
-// bool AP_uZedSerial::detect()
-// {
-//   return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
-// }
+bool AP_uZedSerial::detect()
+{
+  AP_SerialManager &serial_manager = AP::serialmanager();
+  return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
+}
 
 bool AP_uZedSerial::get_flag(Vector3i &agc)
 {
@@ -46,9 +56,10 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
    		return false;
  	} else {
    		c = uart->read();
-   		agc[1] = agc[0];
-   		agc[0] = (int16_t)c;
-   		hal.console->printf("agc_feedback: %d\n", agc[0]);
+   		agc[0] = agc[1];
+   		agc[1] = (int16_t)c;
+      agc[2] = 0;
+   		hal.console->printf("agc_feedback: %d\n", agc[1]);
  	}
  	return true;
 }
