@@ -19,7 +19,15 @@ private:
 	bool first_call;
   	AP_HAL::UARTDriver *uart = nullptr;
   	int16_t nbytes;
-  	char c;
+  	// char c1;
+    // char c2;
   	char tmp_c;
+    // uint16_t agc_feedback;
+
+  union InertialInts {
+    uint16_t i;
+    char c[2] ;
+  } c2i16;
+
   // bool send_telem();
 };

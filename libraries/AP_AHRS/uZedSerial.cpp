@@ -53,11 +53,17 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
 
   	nbytes = uart->available();
  	if (nbytes == 0) {
+    // hal.console->printf("No bytes");
    		return false;
  	} else {
-   		c = uart->read();
+      hal.console->printf("Bytes: %d\n", nbytes);
+
+
+   	  c2i16.c[0] = uart->read();
+      c2i16.c[1] = uart->read();
+
    		agc[0] = agc[1];
-   		agc[1] = (int16_t)c;
+   		agc[1] = c2i16.i;
       agc[2] = 0;
    		hal.console->printf("agc_feedback: %d\n", agc[1]);
  	}
