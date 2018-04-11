@@ -152,7 +152,7 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     // const int32_t lat_grd_test1 = 400000000;
     // const int32_t lat_grd_test2 = 399641550;
     const int32_t lng_gps_denied_test1 = -1052276995;
-    const int32_t lng_gps_denied_test2 = -1052297222;
+    const int32_t lng_gps_denied_test2 = -1052300500;
 
     if ((GPS_lng <= lng_gps_denied_test1 && GPS_lng >= lng_gps_denied_test2)) {
         agc_feedback = 1;
