@@ -139,19 +139,26 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     
     // get GPS coordinates
     // const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
-    // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
+    const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
 
 
 
     //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
-    // agc_feedback_prev = agc_feedback;
+    agc_feedback_prev = agc_feedback;
     // agc_feedback = 0;
 
 
     //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
     // const int32_t lat_grd_test1 = 400000000;
     // const int32_t lat_grd_test2 = 399641550;
+    const int32_t lng_gps_denied_test1 = -1052276995;
+    const int32_t lng_gps_denied_test2 = -1052297222;
 
+    if ((GPS_lng <= lng_gps_denied_test1 && GPS_lng >= lng_gps_denied_test2)) {
+        agc_feedback = 1;
+    } else {
+        agc_feedback = 0;
+    }
     // if ((GPS_lat <= lat_grd_test1) && (GPS_lat >= lat_grd_test2)) {  
     //     agc_feedback = 1;
     //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
@@ -201,7 +208,7 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     } 
 
     // Vector containing AGC switch data
-    // Vector3i agc = {agc_feedback_prev,agc_feedback,0};
+    Vector3i agc = {agc_feedback_prev,agc_feedback,0};
 
     // _agc = agc;
     return _agc;
