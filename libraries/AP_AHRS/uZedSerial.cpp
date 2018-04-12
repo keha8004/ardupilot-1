@@ -3,6 +3,8 @@
 #include <AP_SerialManager/AP_SerialManager.h>
 #include <AP_AHRS/AP_AHRS.h>
 #include <ctype.h>
+#include <ArduPlane/GCS_Mavlink.h>
+
 
 // External ref to AP HAL to gain access to serial ports
 extern const AP_HAL::HAL& hal;
@@ -70,11 +72,10 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
  	return true;
 }
 
-// bool AP_uZedSerial::send_telem()
-// {
-//   if (uart == nullptr) {
-//     return false;
-//   }
-//   // Construct telem data packet
-//   // uart->write();
-// }
+bool AP_uZedSerial::send_telem()
+{
+  if (uart == nullptr) {
+    return false;
+  }
+
+}

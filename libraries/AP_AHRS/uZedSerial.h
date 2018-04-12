@@ -1,16 +1,18 @@
 #pragma once
 
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <ArduPlane/GCS_Mavlink.h>
 
 
 class AP_uZedSerial
 {
 public:
   AP_uZedSerial();
-  // static bool detect(AP_SerialManager &serial_manager);
+
   static AP_uZedSerial *get_instance();
 
   bool get_flag(Vector3i &agc);
+  bool send_telem()
 
   static bool detect();
   
