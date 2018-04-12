@@ -1,7 +1,7 @@
 #pragma once
 
 #include <AP_SerialManager/AP_SerialManager.h>
-#include <ArduPlane/GCS_Mavlink.h>
+// #include <ArduPlane/GCS_Mavlink.h>
 
 
 class AP_uZedSerial
@@ -12,7 +12,7 @@ public:
   static AP_uZedSerial *get_instance();
 
   bool get_flag(Vector3i &agc);
-  bool send_telem()
+  // bool send_telem();
 
   static bool detect();
   
