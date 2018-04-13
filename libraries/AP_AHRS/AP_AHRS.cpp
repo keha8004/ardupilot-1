@@ -137,20 +137,20 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
 Vector3i AP_AHRS::get_agc_feedback(void)
 {
     
-    // get GPS coordinates
+    // // get GPS coordinates
     const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
     const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
 
 
 
-    //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
+    // //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
     agc_feedback_prev = agc_feedback;
-    // agc_feedback = 0;
+    // // agc_feedback = 0;
 
 
-    //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
-    // const int32_t lat_grd_test1 = 400000000;
-    // const int32_t lat_grd_test2 = 399641550;
+    // //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
+    // // const int32_t lat_grd_test1 = 400000000;
+    // // const int32_t lat_grd_test2 = 399641550;
     const int32_t lng_gps_denied_test1 = -1052276995;
     const int32_t lng_gps_denied_test2 = -1052300500;
     const int32_t lat_gps_denied_test  =  399740000;
@@ -208,7 +208,7 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     // if (AP_uZedSerial::detect()) {
     //     // hal.console->printf("MicroZed Detected\n");
     //     AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
-    //     if (uZed->get_flag(*agc_ptr)) {
+    //     if (uZed->get_flag(_agc)) {
     //         hal.console->printf("Read in agc data\n");
     //     } 
     // } 

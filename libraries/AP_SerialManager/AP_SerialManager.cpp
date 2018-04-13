@@ -80,7 +80,7 @@ const AP_Param::GroupInfo AP_SerialManager::var_info[] = {
     // @Description: The baud rate of the Telem2 port. The APM2 can support all baudrates up to 115, and also can support 500. The PX4 can support rates of up to 1500. If you setup a rate you cannot support on APM2 and then can't connect to your board you should load a firmware from a different vehicle type. That will reset all your parameters to defaults.
     // @Values: 1:1200,2:2400,4:4800,9:9600,19:19200,38:38400,57:57600,111:111100,115:115200,500:500000,921:921600,1500:1500000
     // @User: Standard
-    AP_GROUPINFO("2_BAUD", 4, AP_SerialManager, state[2].baud, AP_SERIALMANAGER_UZED_BAUD/1000),
+    AP_GROUPINFO("2_BAUD", 4, AP_SerialManager, state[2].baud, AP_SERIALMANAGER_UZED_BAUD),
 
     // @Param: 3_PROTOCOL
     // @DisplayName: Serial 3 (GPS) protocol selection
@@ -253,7 +253,7 @@ void AP_SerialManager::init()
                     hal.console->printf("DMU on uartE (%p) at %d baud (protocol %d)\n",state[4].uart,(int32_t)state[i].baud,(int8_t)state[i].protocol);
                     break;
                 case SerialProtocol_uZed:
-                    state[i].baud = AP_SERIALMANAGER_UZED_BAUD/1000;
+                    state[i].baud = AP_SERIALMANAGER_UZED_BAUD;
                     state[i].uart->begin(map_baudrate(state[i].baud),
                                          AP_SERIALMANAGER_UZED_BUFSIZE_RX,
                                          AP_SERIALMANAGER_UZED_BUFSIZE_TX);
@@ -277,7 +277,7 @@ AP_HAL::UARTDriver *AP_SerialManager::find_serial(enum SerialProtocol protocol, 
     for(uint8_t i=0; i<SERIALMANAGER_NUM_PORTS; i++) {
         if (protocol_match(protocol, (enum SerialProtocol)state[i].protocol.get())) {
             if (found_instance == instance) {
-                //hal.console->printf("uart: %p | expected uart: %p\n", state[i].uart,hal.uartE);
+                // hal.console->printf("uart: %p | expected uart: %p\n", state[i].uart,hal.uartD);
                 //hal.console->printf("baud: %d, protocol: %d\n", (int32_t)state[i].baud, (int8_t)state[i].protocol);
 
                 return state[i].uart;

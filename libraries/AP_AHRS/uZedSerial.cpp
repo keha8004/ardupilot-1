@@ -54,6 +54,7 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
   	}
 
   	nbytes = uart->available();
+    // hal.console->printf("Bytes: %d\n", nbytes);
  	if (nbytes == 0) {
     // hal.console->printf("No bytes");
    		return false;
@@ -61,12 +62,24 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
       hal.console->printf("Bytes: %d\n", nbytes);
 
 
-   	  c2i16.c[0] = uart->read();
-      c2i16.c[1] = uart->read();
+   	 //  c2i16.c[0] = uart->read();
+     //  c2i16.c[1] = uart->read();
 
-   		agc[0] = agc[1];
-   		agc[1] = c2i16.i;
-      agc[2] = 0;
+   		// agc[0] = agc[1];
+   		// agc[1] = c2i16.i;
+     //  agc[2] = 0;
+
+      // char c1 = uart->read();
+      // char c2 = uart->read();
+      // char c3 = uart->read();
+      // hal.console->printf("c1: %c    c2: %c    c3: %c\n", c1,c2,c3);
+
+      while (nbytes-- > 0) {
+        char c = uart->read();
+        hal.console->printf("%c\n", c);
+      }
+
+      uart->printf("Hi ;)\n");
    		hal.console->printf("agc_feedback: %d\n", agc[1]);
  	}
  	return true;

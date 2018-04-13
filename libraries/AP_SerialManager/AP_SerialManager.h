@@ -78,7 +78,7 @@
 #define AP_SERIALMANAGER_DMU11_BUFSIZE_TX     0         // No need to send data to DMU11
 
 // MicroZed baud rate and buffer sizes
-#define AP_SERIALMANAGER_UZED_BAUD          115200   // Same as MAVLink
+#define AP_SERIALMANAGER_UZED_BAUD          115   // Same as MAVLink
 #define AP_SERIALMANAGER_UZED_BUFSIZE_RX    2       // one byte "flag"
 #define AP_SERIALMANAGER_UZED_BUFSIZE_TX    256     // same as MAVLink
 
