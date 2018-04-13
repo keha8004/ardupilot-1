@@ -19,9 +19,9 @@ first_call(true)
 {
   hal.console->printf("Creating new MicroZed obj\n");
   AP_SerialManager &serial_manager = AP::serialmanager();
-  uart = serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0);
+  uart = serial_manager.find_serial(AP_SerialManager::SerialProtocol_MAVLink,2);
   if (uart != nullptr) {
-    uart->begin(serial_manager.find_baudrate(AP_SerialManager::SerialProtocol_uZed,0));
+    uart->begin(serial_manager.find_baudrate(AP_SerialManager::SerialProtocol_MAVLink,2));
     hal.console->printf("Started sensor on uartD\n");
   }
 }
@@ -37,7 +37,7 @@ AP_uZedSerial *AP_uZedSerial::get_instance()
 bool AP_uZedSerial::detect()
 {
   AP_SerialManager &serial_manager = AP::serialmanager();
-  return serial_manager.find_serial(AP_SerialManager::SerialProtocol_uZed,0) != nullptr;
+  return serial_manager.find_serial(AP_SerialManager::SerialProtocol_MAVLink,2) != nullptr;
 }
 
 bool AP_uZedSerial::get_flag(Vector3i &agc)
@@ -78,4 +78,8 @@ bool AP_uZedSerial::get_flag(Vector3i &agc)
 //     return false;
 //   }
 
+//   // Get MAVLink channel ID
+//   serial_manager.get_mavlink_channel(SerialProtocol_MAVLink,2,mav_chan);
+
+//   GCS_MAVLINK_Plane::try_send_message()
 // }

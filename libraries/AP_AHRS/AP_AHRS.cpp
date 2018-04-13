@@ -20,6 +20,8 @@
 #include <GCS_MAVLink/GCS.h>
 #include "AP_InertialSensor/AP_InertialSensor_DMU11.h"
 #include "uZedSerial.h"
+#include <../../ArduPlane/Plane.h>
+
 
 extern const AP_HAL::HAL& hal;
 
@@ -138,28 +140,28 @@ Vector3i AP_AHRS::get_agc_feedback(void)
 {
     
     // get GPS coordinates
-    const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
-    const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
+    // const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
+    // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
 
 
 
     //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
-    agc_feedback_prev = agc_feedback;
+    // agc_feedback_prev = agc_feedback;
     // agc_feedback = 0;
 
 
     //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
     // const int32_t lat_grd_test1 = 400000000;
     // const int32_t lat_grd_test2 = 399641550;
-    const int32_t lng_gps_denied_test1 = -1052276995;
-    const int32_t lng_gps_denied_test2 = -1052300500;
-    const int32_t lat_gps_denied_test  =  399740000;
+    // const int32_t lng_gps_denied_test1 = -1052276995;
+    // const int32_t lng_gps_denied_test2 = -1052300500;
+    // const int32_t lat_gps_denied_test  =  399740000;
 
-    if ((GPS_lng <= lng_gps_denied_test1) && (GPS_lng >= lng_gps_denied_test2) && (GPS_lat >= lat_gps_denied_test)) {
-        agc_feedback = 1;
-    } else {
-        agc_feedback = 0;
-    }
+    // if ((GPS_lng <= lng_gps_denied_test1) && (GPS_lng >= lng_gps_denied_test2) && (GPS_lat >= lat_gps_denied_test)) {
+    //     agc_feedback = 1;
+    // } else {
+    //     agc_feedback = 0;
+    // }
     // if ((GPS_lat <= lat_grd_test1) && (GPS_lat >= lat_grd_test2)) {  
     //     agc_feedback = 1;
     //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
@@ -167,10 +169,6 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     //     agc_feedback = 0;
     //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
     // }
-
-    // Vector containing AGC switch data
-    Vector3i agc = {agc_feedback_prev,agc_feedback,0};
-    _agc = agc;
 
 
 
@@ -205,13 +203,20 @@ Vector3i AP_AHRS::get_agc_feedback(void)
 */
 
     /////////////////////////////////// MICROZED READ ///////////////////////////////////////
-    // if (AP_uZedSerial::detect()) {
-    //     // hal.console->printf("MicroZed Detected\n");
-    //     AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
-    //     if (uZed->get_flag(*agc_ptr)) {
-    //         hal.console->printf("Read in agc data\n");
-    //     } 
-    // } 
+    if (AP_uZedSerial::detect()) {
+        // hal.console->printf("MicroZed Detected\n");
+        AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
+        if (uZed->get_flag(_agc)) {
+            hal.console->printf("Read in agc data\n");
+        } 
+    } 
+
+    // Send location data over telem 2
+    gcs().chan(2).send_message(MSG_LOCATION);
+
+    // // Vector containing AGC switch data
+    // Vector3i agc = {agc_feedback_prev,agc_feedback,0};
+    // _agc = agc;
 
     return _agc;
 

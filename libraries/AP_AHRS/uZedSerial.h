@@ -2,6 +2,7 @@
 
 #include <AP_SerialManager/AP_SerialManager.h>
 // #include <ArduPlane/GCS_Mavlink.h>
+#include <GCS_MAVLink/GCS_MAVLink.h>
 
 
 class AP_uZedSerial
@@ -15,6 +16,10 @@ public:
   // bool send_telem();
 
   static bool detect();
+
+  // Mavlink Management
+  // mavlink_channel_t mav_chan; // Channel
+
   
 private:
 	static AP_uZedSerial *_instance;
