@@ -143,22 +143,6 @@ void Plane::RAMROD_Switch()
           gcs().send_text(MAV_SEVERITY_INFO, "%d %d. - GPS Enabled", (int)agc_feedback_prev, (int)agc_feedback);
         }
     }
-
-    /*
-    if (control_mode == AUTO) {
-        if(agc_feedback == 1 && agc_feedback_prev == 0) {
-            set_mode(FLY_BY_WIRE_B, MODE_REASON_AGC);
-            // gcs().send_text(MAV_SEVERITY_INFO, "Switching flight mode.");
-        }
-    }
-
-    if (control_mode == FLY_BY_WIRE_B) {
-        if(agc_feedback == 0 && agc_feedback_prev == 1) {
-            set_mode(AUTO, MODE_REASON_AGC);
-            // gcs().send_text(MAV_SEVERITY_INFO, "Switching flight mode.");
-        }
-    }
-    */
 }
 
 // update AHRS system

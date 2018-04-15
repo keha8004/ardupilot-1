@@ -302,6 +302,16 @@ void AP_GPS::init(const AP_SerialManager& serial_manager)
     }
 }
 
+void AP_GPS::agc_feedback_set(int16_t agc_feedback, int16_t agc_feedback_prev)
+{
+    //     if (agc_feedback == 1) {
+    //             for (uint8_t i = 0; i < GPS_MAX_INSTANCES; i++) {
+    //                 state[i].status = AP_GPS::NO_FIX;
+    //             }
+    // }
+    return;
+}
+
 // return number of active GPS sensors. Note that if the first GPS
 // is not present but the 2nd is then we return 2. Note that a blended
 // GPS solution is treated as an additional sensor.
@@ -973,7 +983,7 @@ void AP_GPS::broadcast_first_configuration_failure_reason(void) const
         drivers[unconfigured]->broadcast_configuration_failure_reason();
     }
 }
-
+// What
 // pre-arm check that all GPSs are close to each other.  farthest distance between GPSs (in meters) is returned
 bool AP_GPS::all_consistent(float &distance) const
 {

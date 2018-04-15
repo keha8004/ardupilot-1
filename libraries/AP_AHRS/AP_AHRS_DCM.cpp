@@ -369,7 +369,7 @@ AP_AHRS_DCM::_yaw_gain(void) const
 // return true if we have and should use GPS
 bool AP_AHRS_DCM::have_gps(void) const
 {
-    if (AP::gps().status() <= AP_GPS::NO_FIX || !_gps_use) {
+    if (AP::gps().status() <= AP_GPS::NO_FIX || !_gps_use || agc_feedback == 1) {
         return false;
     }
     return true;
@@ -666,6 +666,7 @@ AP_AHRS_DCM::drift_correction(float deltat)
     }
 
     if (have_gps()) {
+
         // use GPS for positioning with any fix, even a 2D fix
         _last_lat = _gps.location().lat;
         _last_lng = _gps.location().lng;

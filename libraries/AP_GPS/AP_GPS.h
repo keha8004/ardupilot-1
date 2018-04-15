@@ -181,6 +181,8 @@ public:
     // GPS solution is treated as an additional sensor.
     uint8_t num_sensors(void) const;
 
+    void agc_feedback_set(int16_t agc_feedback, int16_t agc_feedback_prev);
+
     // Return the index of the primary sensor which is the index of the sensor contributing to
     // the output. A blended solution is available as an additional instance
     uint8_t primary_sensor(void) const {

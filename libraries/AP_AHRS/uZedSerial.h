@@ -12,6 +12,7 @@ public:
   static AP_uZedSerial *get_instance();
 
   bool get_flag(Vector3i &agc);
+  
   // bool send_telem();
 
   static bool detect();
