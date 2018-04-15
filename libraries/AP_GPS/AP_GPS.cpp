@@ -21,6 +21,7 @@
 #include <GCS_MAVLink/GCS.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <climits>
+#include <AP_AHRS/AP_AHRS.h>
 
 #include "AP_GPS_NOVA.h"
 #include "AP_GPS_ERB.h"
@@ -275,6 +276,17 @@ AP_GPS::AP_GPS()
     }
     _singleton = this;
 }
+
+void AP_GPS::agc_switch_gps() {
+        AP_AHRS &_ahrs = AHRS_namespace::get_ahrs();
+        // auto agc = _ahrs->get_agc();
+        auto agc = _ahrs.get_agc();
+        if (agc.y) {
+            state[primary_instance].status = NO_GPS;
+        } else {
+            state[primary_instance].status = GPS_OK_FIX_3D;
+        }
+    }
 
 /// Startup initialisation.
 void AP_GPS::init(const AP_SerialManager& serial_manager)

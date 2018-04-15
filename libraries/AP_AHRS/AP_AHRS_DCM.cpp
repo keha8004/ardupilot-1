@@ -369,7 +369,13 @@ AP_AHRS_DCM::_yaw_gain(void) const
 // return true if we have and should use GPS
 bool AP_AHRS_DCM::have_gps(void) const
 {
-    if (AP::gps().status() <= AP_GPS::NO_FIX || !_gps_use) {
+    // get AGC status
+    // auto agc = get_agc();
+
+    // auto agc_feedback_prev = agc.x;
+    // auto agc_feedback1 = agc.y;
+
+    if (AP::gps().status() <= AP_GPS::NO_FIX || !_gps_use || agc_feedback == 1) {
         return false;
     }
     return true;

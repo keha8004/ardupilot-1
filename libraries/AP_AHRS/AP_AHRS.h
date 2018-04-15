@@ -45,7 +45,6 @@ enum AHRS_VehicleClass {
     AHRS_VEHICLE_SUBMARINE,
 };
 
-
 // forward declare view class
 class AP_AHRS_View;
 
@@ -80,7 +79,7 @@ public:
     {
         // load default values from var_info table
         AP_Param::setup_object_defaults(this, var_info);
-
+        _instance = this;
         // base the ki values by the sensors maximum drift
         // rate.
         _gyro_drift_limit = ins.get_gyro_drift_rate();
@@ -104,6 +103,11 @@ public:
 
     Vector3i get_agc(void) const {
         return _agc;
+    }
+
+    // get singleton instance
+    static AP_AHRS *get_instance(void) {
+        return _instance;
     }
 
      // Signal from payload (0: GPS available, 1: no GPS available)
@@ -688,7 +692,14 @@ protected:
     // AOA and SSA
     float _AOA, _SSA;
     uint32_t _last_AOA_update_ms;
+
+private:
+    static AP_AHRS *_instance;
 };
+
+namespace AHRS_namespace {
+    AP_AHRS &get_ahrs();
+}
 
 #include "AP_AHRS_DCM.h"
 #include "AP_AHRS_NavEKF.h"

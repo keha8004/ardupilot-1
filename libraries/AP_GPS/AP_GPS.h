@@ -22,6 +22,7 @@
 #include <AP_Vehicle/AP_Vehicle.h>
 #include "GPS_detect_state.h"
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <AP_AHRS/AP_AHRS.h>
 
 /**
    maximum number of GPS instances available on this platform. If more
@@ -188,9 +189,18 @@ public:
     }
 
     /// Query GPS status
-    GPS_Status status(uint8_t instance) const {
+    void agc_switch_gps();
+
+    // GPS_Status status(uint8_t instance) const {
+    //     agc_switch_gps();
+    //     return state[instance].status;
+    // }
+
+    GPS_Status status(uint8_t instance) {
+        agc_switch_gps();
         return state[instance].status;
     }
+
     GPS_Status status(void) const {
         return status(primary_instance);
     }
