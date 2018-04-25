@@ -1,23 +1,26 @@
 #pragma once
 
 #include <AP_SerialManager/AP_SerialManager.h>
+
 // #include <ArduPlane/GCS_Mavlink.h>
 
+class AP_AHRS;
 
 class AP_uZedSerial
 {
 public:
-  AP_uZedSerial();
+  AP_uZedSerial(AP_AHRS *ahrs);
 
   static AP_uZedSerial *get_instance();
 
   bool get_flag(Vector3i &agc);
   
-  // bool send_telem();
+  bool send_telem();
 
   static bool detect();
   
 private:
+  const AP_AHRS *_ahrs;
 	static AP_uZedSerial *_instance;
 	bool first_call;
   	AP_HAL::UARTDriver *uart = nullptr;

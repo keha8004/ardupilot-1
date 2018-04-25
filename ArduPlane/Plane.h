@@ -226,6 +226,9 @@ private:
     AP_AHRS_DCM ahrs{ins, barometer};
 #endif
 
+    // MICROZED INITIALIZATION
+    // AP_uZedSerial uZed{&ahrs};
+
     AP_TECS TECS_controller{ahrs, aparm, landing, g2.soaring_controller};
     AP_L1_Control L1_controller{ahrs, &TECS_controller};
 

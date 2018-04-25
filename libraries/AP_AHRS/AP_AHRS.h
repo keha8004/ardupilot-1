@@ -32,6 +32,7 @@
 #include <AP_InertialSensor/AP_InertialSensor_DMU11.h>
 #include "uZedSerial.h"
 
+
 class OpticalFlow;
 #define AP_AHRS_TRIM_LIMIT 10.0f        // maximum trim angle in degrees
 #define AP_AHRS_RP_P_MIN   0.05f        // minimum value for AHRS_RP_P parameter
@@ -101,6 +102,8 @@ public:
 
         // RAMROD AGC Feedback
     Vector3i get_agc_feedback(void);
+    // Vector3i get_agc_feedback(AP_uZedSerial &_uZed);
+
 
     Vector3i get_agc(void) const {
         return _agc;
@@ -692,6 +695,7 @@ protected:
 
 #include "AP_AHRS_DCM.h"
 #include "AP_AHRS_NavEKF.h"
+// #include "uZedSerial.h"
 
 #if AP_AHRS_NAVEKF_AVAILABLE
 #define AP_AHRS_TYPE AP_AHRS_NavEKF

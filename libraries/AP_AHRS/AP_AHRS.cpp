@@ -18,8 +18,6 @@
 #include "AP_AHRS_View.h"
 #include <AP_HAL/AP_HAL.h>
 #include <GCS_MAVLink/GCS.h>
-#include "AP_InertialSensor/AP_InertialSensor_DMU11.h"
-#include "uZedSerial.h"
 
 extern const AP_HAL::HAL& hal;
 
@@ -134,26 +132,30 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
     AP_GROUPEND
 };
 
+// Vector3i AP_AHRS::get_agc_feedback(AP_uZedSerial &_uZed)
 Vector3i AP_AHRS::get_agc_feedback(void)
 {
     
-    // // get GPS coordinates
-    const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
-    // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
+    
 
 
 
     // //////////////////////////////   GPS-Enabled ///////////////////////////////////////////////////
     agc_feedback_prev = agc_feedback;
-    // agc_feedback = 0;
+    agc_feedback = 0;
 
 
     // //////////////////////////////   40 deg lat GPS-Denied //////////////////////////////////////////
-    const int32_t lat_grd_test1 = 400000000;
-    const int32_t lat_grd_test2 = 399641550;
+    // // get GPS coordinates
+    const int32_t GPS_lat = AP::gps().location().lat; // Latitude * 10**7
+    // const int32_t GPS_lng = AP::gps().location().lng; // Longitude * 10**7
+    const int32_t lat_grd_test1 = 400062770;    // Business Field North
+    const int32_t lat_grd_test2 = 400052460;    // Business Field South
+    // const int32_t lat_grd_test1 = 400000000;
+    // const int32_t lat_grd_test2 = 399641550;
     // const int32_t lng_gps_denied_test1 = -1052276995;
     // const int32_t lng_gps_denied_test2 = -1052300500;
-    // const int32_t lat_gps_denied_test  =  399740000;
+    // const int32_t lat_gps_denied_test  =  399735000;
 
     // if ((GPS_lng <= lng_gps_denied_test1) && (GPS_lng >= lng_gps_denied_test2) && (GPS_lat >= lat_gps_denied_test)) {
     //     agc_feedback = 1;
@@ -167,7 +169,13 @@ Vector3i AP_AHRS::get_agc_feedback(void)
         agc_feedback = 0;
         // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
     }
-
+    // if (GPS_lat >= lat_gps_denied_test) {  
+    //     agc_feedback = 1;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS DENIED");
+    // } else {
+    //     agc_feedback = 0;
+    //     // gcs().send_text(MAV_SEVERITY_INFO, "GPS ENABLED");
+    // }
     // Vector containing AGC switch data
 
     // AP::gps().agc_feedback_set(agc_feedback, agc_feedback_prev);
@@ -206,7 +214,11 @@ Vector3i AP_AHRS::get_agc_feedback(void)
     }
 */
 
-    /////////////////////////////////// MICROZED READ ///////////////////////////////////////
+    /////////////////////////////////// MICROZED READ AND WRITE ///////////////////////////////////////
+    // bool check_feedback = _uZed.get_flag(_agc);
+    // if (check_feedback) {
+    //         hal.console->printf("Read in agc data\n");
+    // } 
     // if (AP_uZedSerial::detect()) {
     //     // hal.console->printf("MicroZed Detected\n");
     //     AP_uZedSerial *uZed = AP_uZedSerial::get_instance();
@@ -231,7 +243,7 @@ bool AP_AHRS::airspeed_estimate(float *airspeed_ret) const
 {
     if (airspeed_sensor_enabled()) {
         *airspeed_ret = _airspeed->get_airspeed();
-        if (_wind_max > 0 && AP::gps().status() >= AP_GPS::GPS_OK_FIX_2D) {
+        if (_wind_max > 0 && AP::gps().status() >= AP_GPS::GPS_OK_FIX_2D && agc_feedback == 0) {
             // constrain the airspeed by the ground speed
             // and AHRS_WIND_MAX
             const float gnd_speed = AP::gps().ground_speed();
@@ -281,7 +293,7 @@ Vector2f AP_AHRS::groundspeed_vector(void)
     Vector2f gndVelGPS;
     float airspeed;
     const bool gotAirspeed = airspeed_estimate_true(&airspeed);
-    const bool gotGPS = (AP::gps().status() >= AP_GPS::GPS_OK_FIX_2D);
+    const bool gotGPS = (AP::gps().status() >= AP_GPS::GPS_OK_FIX_2D && _agc[1] == 0);
     if (gotAirspeed) {
         const Vector3f wind = wind_estimate();
         const Vector2f wind2d(wind.x, wind.y);
